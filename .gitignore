@@ -26,3 +26,5 @@ fp-info-cache
 *.csv
 
 hardware/Template-KiCAD-Project-CI-backups/
+
+*.zip
