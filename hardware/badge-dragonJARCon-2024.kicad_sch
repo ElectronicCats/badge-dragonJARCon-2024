@@ -8676,7 +8676,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Footprints:JS102011SAQN"
+		(property "Footprint" "Footprints:MSK12C02"
 			(at 76.073 173.99 0)
 			(effects
 				(font
@@ -8703,7 +8703,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC#" "-"
+		(property "LCSC#" "C431540"
 			(at 76.073 173.99 0)
 			(effects
 				(font
@@ -8712,7 +8712,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "611-JS102011SAQN"
+		(property "manf#" ""
 			(at 76.073 173.99 0)
 			(effects
 				(font
@@ -11458,7 +11458,7 @@
 				)
 			)
 		)
-		(property "Value" "0.5A"
+		(property "Value" "0.75A"
 			(at 146.558 35.7124 0)
 			(effects
 				(font
@@ -11466,7 +11466,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Fuse:Fuse_0805_2012Metric"
+		(property "Footprint" "Fuse:Fuse_0603_1608Metric"
 			(at 146.558 38.1 0)
 			(effects
 				(font
@@ -11511,7 +11511,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC#" "C1972808"
+		(property "LCSC#" " C182438"
 			(at 146.558 38.1 0)
 			(effects
 				(font
