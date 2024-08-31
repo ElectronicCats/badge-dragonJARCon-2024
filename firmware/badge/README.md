@@ -19,7 +19,7 @@ You can build your own firmware using the [ESP-IDF](https://docs.espressif.com/p
 
 ## Prerequisites
 
-- [Minino](https://electroniccats.com/store/minino/)
+- DragonJar badge
 - [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html) installed
 - [Make](https://www.gnu.org/software/make/) installed
 - [pre-commit](https://pre-commit.com/) installed (optional but recommended)
@@ -31,19 +31,19 @@ You can build your own firmware using the [ESP-IDF](https://docs.espressif.com/p
 Using HTTPS:
 
 ```bash
-git clone https://github.com/ElectronicCats/Minino.git
+git clone https://github.com/ElectronicCats/badge-dragonJARCon-2024
 ```
 
 Using SSH:
 
 ```bash
-git clone git@github.com:ElectronicCats/Minino.git
+git clone git@github.com:ElectronicCats/badge-dragonJARCon-2024.git
 ```
 
 2. Change to the firmware directory:
 
 ```bash
-cd Minino/examples/minino
+cd badge-dragonJARCon-2024/firmware
 ```
 
 3. Set the IDF_PATH environment variable:
@@ -53,6 +53,20 @@ get_idf
 ```
 
 > **Note:** `get_idf` should be an alias you created if you followed the [ESP-IDF installation guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html).
+
+4. Set the Minino environment variable. This project uses the [Minino](https://github.com/ElectronicCats/Minino) firmware codebase. You have to clone it somewhere in your computer and get the path to its firmware directory. For example:
+
+```bash
+/Users/user/Minino/firmware
+```
+
+Set the Minino environment variable:
+
+```bash
+export MININO_PATH=/Users/user/Minino/firmware
+```
+
+> **Note:** Replace `/Users/user/Minino/firmware` with the path to your Minino firmware directory, not the root directory of the Minino repository.
 
 4. Setup the project environment:
 
