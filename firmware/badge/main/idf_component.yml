@@ -16,6 +16,9 @@ dependencies:
     path: ${MININO_PATH}/components/ble_hid
   espressif/iperf:
     version: "~0.1.1"
+  # badge_connect:
+    # git: https://github.com/ElectronicCats/badge_connect_bin
+    # version: "1.0.0"
 
   # # Put list of dependencies here
   # # For components maintained by Espressif:
