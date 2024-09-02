@@ -1,10 +1,11 @@
 file(GLOB_RECURSE ALL_SOURCE_FILES "$ENV{MININO_PATH}/main/*")
-set(modules_src "")
+set(all_src_files "")
 
 foreach(file ${ALL_SOURCE_FILES})
     get_filename_component(extension ${file} EXT)
-    if(NOT extension STREQUAL "")
-        list(APPEND modules_src ${file})
+    # Exclude main.c from Minino
+    if(NOT extension STREQUAL "" AND NOT ${file} MATCHES "main.c")
+        list(APPEND all_src_files ${file})
     endif()
 endforeach()
 
@@ -14,52 +15,19 @@ set(headers_dirs "")
 foreach(path ${ALL_INCLUDE_PATHS})
     get_filename_component(parentDir ${path} DIRECTORY)
 
-    if(IS_DIRECTORY ${parentDir})
+    if(IS_DIRECTORY ${parentDir} AND NOT ${parentDir} STREQUAL "include")
         list(APPEND headers_dirs ${parentDir})
     endif()
 endforeach()
 
 idf_component_register(
     SRCS
-    "${modules_src}"
+    "${all_src_files}"
+    "main.c"
     EMBED_FILES
     $ENV{MININO_PATH}/main/modules/web_file_browser/http_server/header.html
     $ENV{MININO_PATH}/main/modules/web_file_browser/http_server/favicon_b.ico
     $ENV{MININO_PATH}/main/modules/web_file_browser/http_server/style.css
     INCLUDE_DIRS
-    "${headers_dirs}")
-
-# # Append all directories to INCLUDE_DIRS
-
-# file(GLOB_RECURSE ALL_INCLUDE_PATHS "./*")
-# set(INCLUDE_DIRS "")
-
-# foreach(path ${ALL_INCLUDE_PATHS})
-#     get_filename_component(parentDir ${path} DIRECTORY)
-
-#     if(IS_DIRECTORY ${parentDir})
-#         list(APPEND INCLUDE_DIRS ${parentDir})
-#     endif()
-# endforeach()
-
-# list(REMOVE_DUPLICATES INCLUDE_DIRS)
-
-# # Append all source files to SRCS
-
-# file(GLOB_RECURSE ALL_SOURCE_FILES "./*")
-# set(SRCS "")
-
-# foreach(file ${ALL_SOURCE_FILES})
-#     get_filename_component(extension ${file} EXT)
-#     if(NOT extension STREQUAL "")
-#         list(APPEND SRCS ${file})
-#     endif()
-# endforeach()
-
-# # Register the component
-
-# idf_component_register(
-#                     SRCS
-#                     ${SRCS}
-#                     INCLUDE_DIRS
-#                     ${INCLUDE_DIRS})
+    "${headers_dirs}"
+    "include")
