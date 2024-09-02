@@ -25,6 +25,8 @@
 #include "wifi_settings.h"
 #include "zigbee_module.h"
 
+#define TESTING 1
+
 typedef enum {
   MENU_MAIN_2 = 0,
   MENU_APPLICATIONS_2,

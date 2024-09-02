@@ -10,13 +10,27 @@ foreach(file ${ALL_SOURCE_FILES})
 endforeach()
 
 file(GLOB_RECURSE ALL_INCLUDE_PATHS "$ENV{MININO_PATH}/main/*")
-set(headers_dirs "")
+set(minino_headers_dirs "")
 
 foreach(path ${ALL_INCLUDE_PATHS})
     get_filename_component(parentDir ${path} DIRECTORY)
 
-    if(IS_DIRECTORY ${parentDir} AND NOT ${parentDir} STREQUAL "include")
-        list(APPEND headers_dirs ${parentDir})
+    if(IS_DIRECTORY ${parentDir} AND NOT ${parentDir} MATCHES "menus_include")
+        list(APPEND minino_headers_dirs ${parentDir})
+    endif()
+endforeach()
+
+file(GLOB_RECURSE ALL_INCLUDE_PATHS "/main/*")
+set(local_headers_dirs "")
+
+foreach(path ${ALL_INCLUDE_PATHS})
+    get_filename_component(parentDir ${path} DIRECTORY)
+
+    # if(IS_DIRECTORY ${parentDir} AND NOT ${parentDir} STREQUAL "include")
+    #     list(APPEND local_headers_dirs ${parentDir})
+    # endif()
+    if(IS_DIRECTORY ${parentDir})
+        list(APPEND local_headers_dirs ${parentDir})
     endif()
 endforeach()
 
@@ -29,5 +43,6 @@ idf_component_register(
     $ENV{MININO_PATH}/main/modules/web_file_browser/http_server/favicon_b.ico
     $ENV{MININO_PATH}/main/modules/web_file_browser/http_server/style.css
     INCLUDE_DIRS
-    "${headers_dirs}"
+    "${minino_headers_dirs}"
+    "${local_headers_dirs}"
     "include")

@@ -23,6 +23,10 @@ static const char* TAG = "main";
 
 void app_main() {
   ESP_LOGE(TAG, "HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+#if defined(TESTING)
+  ESP_LOGE(TAG, "TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+#endif
+
 #if !defined(CONFIG_MAIN_DEBUG)
   esp_log_level_set(TAG, ESP_LOG_NONE);
 #endif
