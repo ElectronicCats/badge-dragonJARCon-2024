@@ -1,5 +1,6 @@
 #include "badge_link_screens_module.h"
 #include "general_screens.h"
+#include "menus_module.h"
 #include "oled_screen.h"
 
 epd_bitmap_logo_index_t found_badge_logo_index = LOGO_BSIDES;
@@ -18,7 +19,7 @@ const char* badge_link_help[] = {"Has ido a",
                                  "buena suerte..."};
 
 const general_menu_t badge_link_help_menu = {
-    .menu_count = 1,
+    .menu_count = 12,
     .menu_items = badge_link_help,
     .menu_level = GENERAL_TREE_APP_MENU};
 
@@ -84,4 +85,5 @@ void badge_link_screens_module_set_found_badge_logo(
 
 void badge_link_screens_module_show_help() {
   general_register_scrolling_menu(&badge_link_help_menu);
+  general_screen_display_scrolling_text_handler(menus_module_exit_app);
 }
