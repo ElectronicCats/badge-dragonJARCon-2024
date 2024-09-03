@@ -7,6 +7,7 @@
 #include "trackers_module.h"
 #include "z_switch_module.h"
 
+#include "badge_link_module.h"
 #include "catdos_module.h"
 #include "deauth_module.h"
 #include "display_settings.h"
@@ -36,6 +37,7 @@ typedef enum {
   MENU_ZIGBEE_APPS,
   MENU_THREAD_APPS,
   MENU_GPS,
+  MENU_BADGE_FINDER,
   /* WiFi applications */
   MENU_WIFI_ANALIZER,
   MENU_WIFI_DEAUTH,
@@ -74,6 +76,9 @@ typedef enum {
   /* Wardriving submenus */
   MENU_GPS_WARDRIVING_START,
   MENU_GPS_WARDRIVING_HELP,
+  /* Badge finder */
+  MENU_BADGE_FINDER_SCAN,
+  MENU_BADGE_FINDER_HELP,
   /* About submenus */
   MENU_ABOUT_VERSION,
   MENU_ABOUT_LICENSE,
@@ -431,6 +436,28 @@ menu_t menus[] = {  //////////////////////////////////
      .on_exit_cb = NULL,
      .is_visible = true},
 #endif
+    {.display_name = "Encontrar",
+     .menu_idx = MENU_BADGE_FINDER,
+     .parent_idx = MENU_APPLICATIONS,
+     .last_selected_submenu = 0,
+     .on_enter_cb = NULL,
+     .on_exit_cb = NULL,
+     .is_visible = true},
+    {.display_name = "Escanear",
+     .menu_idx = MENU_BADGE_FINDER_SCAN,
+     .parent_idx = MENU_BADGE_FINDER,
+     .last_selected_submenu = 0,
+     .on_enter_cb = NULL,
+     .on_exit_cb = NULL,
+     .is_visible = true},
+    {.display_name = "Ayuda",
+     .menu_idx = MENU_BADGE_FINDER_HELP,
+     .parent_idx = MENU_BADGE_FINDER,
+     .last_selected_submenu = 0,
+     //  .on_enter_cb = badge_link_screens_module_show_help,
+     .on_enter_cb = NULL,
+     .on_exit_cb = NULL,
+     .is_visible = true},
     {.display_name = "Display",
      .menu_idx = MENU_SETTINGS_DISPLAY,
      .parent_idx = MENU_SETTINGS,

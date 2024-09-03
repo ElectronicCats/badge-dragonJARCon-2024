@@ -1,0 +1,207 @@
+#include "esp_log.h"
+#include "esp_wifi.h"
+#include "nvs_flash.h"
+
+#include "badge_connect.h"
+#include "badge_link_bitmaps.h"
+#include "badge_link_module.h"
+#include "badge_link_screens_module.h"
+#include "menus_screens.h"
+#include "preferences.h"
+
+#define SEND_DATA_DELAY_MS 100
+#define SEND_DATA_TIMEOUT  SEND_DATA_DELAY_MS * 15 / 10  // 15 Seconds
+
+static const char* TAG = "badge_link_module";
+TaskHandle_t badge_link_state_machine_task_handle;
+TaskHandle_t badge_link_stop_badge_connect_task_handle;
+uint8_t send_data_timeout = SEND_DATA_TIMEOUT;
+bool badge_link_send_data = false;
+
+badge_link_screens_status_t badge_link_status = BADGE_LINK_SCANNING;
+badge_link_screens_status_t badge_link_status_previous =
+    BADGE_LINK_UNLOCK_FEATURE;
+
+void nvs_init() {
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
+      ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(ret);
+}
+
+void wifi_init() {
+  esp_event_loop_create_default();
+
+  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+  nvs_init();
+
+  ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+  ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+  ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
+  ESP_ERROR_CHECK(esp_wifi_start());
+}
+
+void badge_link_stop_badge_connect_task(void* pvParameters) {
+  badge_link_send_data = true;
+  vTaskDelay(200 / portTICK_PERIOD_MS);
+  badge_link_send_data = false;
+  vTaskDelay(200 / portTICK_PERIOD_MS);
+  badge_connect_deinit();
+
+  while (true) {
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+
+  vTaskDelete(NULL);
+}
+
+void stop_badge_connect_after_delay() {
+  xTaskCreate(badge_link_stop_badge_connect_task,
+              "badge_link_stop_badge_connect_task", 2048, NULL, 5,
+              &badge_link_stop_badge_connect_task_handle);
+}
+
+void badge_link_update_found_badge_logo(badge_connect_recv_msg_t* msg) {
+  if (msg->badge_type.is_bsides) {
+    badge_link_screens_module_set_found_badge_logo(LOGO_BSIDES);
+  } else if (msg->badge_type.is_dragonjar) {
+    badge_link_screens_module_set_found_badge_logo(LOGO_DRAGONJAR);
+  } else if (msg->badge_type.is_ekoparty) {
+    badge_link_screens_module_set_found_badge_logo(LOGO_EKOPARTY);
+  } else if (msg->badge_type.is_bugcon) {
+    badge_link_screens_module_set_found_badge_logo(LOGO_BUGCON);
+  }
+}
+
+// Check badge_connect_recv_msg_t struct in badge_connect.h to see what you can
+// get from the received message
+void badge_link_receive_data_cb(badge_connect_recv_msg_t* msg) {
+  char* data = (char*) msg->data;
+  data[msg->data_size] = '\0';
+  ESP_LOGI(TAG, "Received data: %s, RSSI: %d", data, msg->rx_ctrl->rssi);
+
+  bool is_hello_world = strcmp(data, "Hello world") == 0;
+
+  if (is_hello_world && !msg->badge_type.is_bsides &&
+      badge_link_status != BADGE_LINK_FOUND_TEXT) {
+    if (msg->rx_ctrl->rssi > -100 && msg->rx_ctrl->rssi <= -60) {
+      badge_link_status = BADGE_LINK_BRING_IT_CLOSER;
+    } else if (msg->rx_ctrl->rssi > -60) {
+      badge_link_status = BADGE_LINK_FOUND_TEXT;
+      vTaskSuspend(badge_link_screens_module_scan_task_handle);
+      stop_badge_connect_after_delay();
+      badge_link_update_found_badge_logo(msg);
+      preferences_put_bool("badge_found", true);
+    }
+  }
+}
+
+void badge_link_module_send_data() {
+  // Decreased every SEND_DATA_DELAY_MS
+  send_data_timeout = send_data_timeout > 0 ? send_data_timeout - 1 : 0;
+
+  if (send_data_timeout / 10 == 0 &&
+      (badge_link_status == BADGE_LINK_SCANNING ||
+       badge_link_status == BADGE_LINK_BRING_IT_CLOSER)) {
+    badge_link_status = BADGE_LINK_NOT_FOUND;
+    vTaskSuspend(badge_link_screens_module_scan_task_handle);
+    badge_connect_deinit();
+    return;
+  }
+
+  if (badge_link_status == BADGE_LINK_SCANNING ||
+      badge_link_status == BADGE_LINK_BRING_IT_CLOSER || badge_link_send_data) {
+    char* data = "Hello world";
+    uint8_t* addr = ESPNOW_ADDR_BROADCAST;  // Send to all badges
+    badge_connect_send(addr, data, strlen(data));
+  }
+
+  vTaskDelay(SEND_DATA_DELAY_MS / portTICK_PERIOD_MS);
+}
+
+void badge_link_keyboard_cb(button_event_t button_pressed) {
+  // >> 4 to get the button number
+  uint8_t button_name = (((button_event_t) button_pressed) >> 4);
+  // & 0x0F to get the event number without the mask
+  uint8_t button_event = ((button_event_t) button_pressed) & 0x0F;
+
+  switch (button_name) {
+    case BUTTON_LEFT:
+      if (button_event == BUTTON_SINGLE_CLICK) {
+        if (badge_link_status != BADGE_LINK_FOUND_TEXT &&
+            badge_link_status != BADGE_LINK_FOUND_LOGO) {
+          badge_link_module_exit();
+        }
+      }
+      break;
+    case BUTTON_RIGHT:
+      if (button_event == BUTTON_SINGLE_CLICK) {
+        switch (badge_link_status) {
+          case BADGE_LINK_FOUND_TEXT:
+            badge_link_status = BADGE_LINK_FOUND_LOGO;
+            break;
+          case BADGE_LINK_FOUND_LOGO:
+            badge_link_status = BADGE_LINK_UNLOCK_FEATURE;
+            break;
+          case BADGE_LINK_NOT_FOUND:
+          case BADGE_LINK_UNLOCK_FEATURE:
+            badge_link_module_exit();
+            break;
+          default:
+            break;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+void badge_link_reset_status() {
+  badge_link_status = BADGE_LINK_SCANNING;
+  badge_link_status_previous = BADGE_LINK_UNLOCK_FEATURE;
+  send_data_timeout = SEND_DATA_TIMEOUT;
+  badge_link_send_data = false;
+}
+
+void badge_link_state_machine_task(void* pvParameters) {
+  badge_link_reset_status();
+
+  while (true) {
+    if (badge_link_status != badge_link_status_previous) {
+      ESP_LOGI(TAG, "Badge link status: %s",
+               badge_link_status_strings[badge_link_status]);
+      badge_link_screens_module_display_status(badge_link_status);
+      badge_link_status_previous = badge_link_status;
+    }
+    badge_link_module_send_data();
+  }
+}
+
+void badge_link_module_begin() {
+  ESP_LOGI(TAG, "Badge link module begin");
+  menus_module_set_app_state(true, badge_link_keyboard_cb);
+  wifi_init();  // Needed to work with espnow
+  badge_connect_init();
+  badge_connect_register_recv_cb(badge_link_receive_data_cb);
+  // Set the badge type to BSides, DragonJAR, Ekoparty, or BugCon
+  // See README.md or badge_connect.h for more information
+  badge_connect_set_bsides_badge();
+  xTaskCreate(badge_link_state_machine_task, "badge_link_state_machine_task",
+              4096, NULL, 4, &badge_link_state_machine_task_handle);
+}
+
+void badge_link_module_exit() {
+  ESP_LOGI(TAG, "Badge link module exit");
+  menus_module_set_reset_screen(MENU_BADGE_FINDER_SCAN);
+  esp_restart();
+  // vTaskDelete(badge_link_state_machine_task_handle);
+  // vTaskDelete(badge_link_screens_module_scan_task_handle);
+  // badge_connect_deinit();
+  // menu_screens_set_app_state(false, NULL);
+  // menu_screens_exit_submenu();
+}
