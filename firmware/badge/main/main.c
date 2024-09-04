@@ -19,6 +19,7 @@
 
 #include "badge_connect.h"
 #include "badge_link_module.h"
+#include "infection.h"
 
 #define BUZZER_PIN GPIO_NUM_2
 
@@ -42,6 +43,7 @@ void app_main() {
   menus_module_begin();
   leds_off();
   preferences_put_bool("wifi_connected", false);
+  infection_begin();
   // badge_link_module_begin();
   // cat_console_begin();
 }

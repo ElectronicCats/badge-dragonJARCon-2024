@@ -14,6 +14,7 @@
 #include "file_manager_module.h"
 #include "gps_module.h"
 #include "gps_screens.h"
+#include "infection.h"
 #include "open_thread_module.h"
 #include "ota_module.h"
 #include "sd_card_settings_module.h"
@@ -76,6 +77,11 @@ typedef enum {
   /* Wardriving submenus */
   MENU_GPS_WARDRIVING_START,
   MENU_GPS_WARDRIVING_HELP,
+  /* Infection */
+  MENU_INFECTION,
+  MENU_INFECTION_STATE,
+  MENU_INFECTION_VACCINES,
+  MENU_INFECTION_HELP,
   /* Badge finder */
   MENU_BADGE_FINDER_SCAN,
   MENU_BADGE_FINDER_HELP,
@@ -436,6 +442,34 @@ menu_t menus[] = {  //////////////////////////////////
      .on_exit_cb = NULL,
      .is_visible = true},
 #endif
+    {.display_name = "Infeccion",
+     .menu_idx = MENU_INFECTION,
+     .parent_idx = MENU_APPLICATIONS,
+     .last_selected_submenu = 0,
+     .on_enter_cb = NULL,
+     .on_exit_cb = NULL,
+     .is_visible = true},
+    {.display_name = "Estado",
+     .menu_idx = MENU_INFECTION_STATE,
+     .parent_idx = MENU_INFECTION,
+     .last_selected_submenu = 0,
+     .on_enter_cb = infection_display_status,
+     .on_exit_cb = NULL,
+     .is_visible = true},
+    {.display_name = "Vacunas",
+     .menu_idx = MENU_INFECTION_VACCINES,
+     .parent_idx = MENU_INFECTION,
+     .last_selected_submenu = 0,
+     .on_enter_cb = NULL,
+     .on_exit_cb = NULL,
+     .is_visible = true},
+    {.display_name = "Ayuda",
+     .menu_idx = MENU_INFECTION_HELP,
+     .parent_idx = MENU_INFECTION,
+     .last_selected_submenu = 0,
+     .on_enter_cb = NULL,
+     .on_exit_cb = NULL,
+     .is_visible = true},
     {.display_name = "Encontrar",
      .menu_idx = MENU_BADGE_FINDER,
      .parent_idx = MENU_APPLICATIONS,

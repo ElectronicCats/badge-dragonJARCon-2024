@@ -1,0 +1,55 @@
+#pragma once
+
+#include "infection.h"
+
+#define VIRUS_STR_1 "ChronoX-12"
+#define VIRUS_STR_2 "ZenoVax-44"
+#define VIRUS_STR_3 "HelioRex-09"
+
+#define ARN_STR_1 "mRNA-SynthePro-18"
+#define ARN_STR_2 "GeneScript-RX7"
+#define ARN_STR_3 "SynthoRNA-Alpha"
+
+#define VIRAL_CODE_STR_1 "ViroGen-SARS-CoV2"
+#define VIRAL_CODE_STR_2 "ViroGen-FluX"
+#define VIRAL_CODE_STR_3 "ViroGen-RSV-NX"
+
+#define LIPID_LAYER_STR_1 "LipoShield-X3"
+#define LIPID_LAYER_STR_2 "LipidCore-Alpha"
+#define LIPID_LAYER_STR_3 "NanoLip-Lite"
+
+typedef enum { VIRUS_1, VIRUS_2, VIRUS_3, VIRUS_NUM } virus_t;
+
+// ARN Mensajero (ARNm) Sintético
+typedef enum {
+  MRNA_SYNTHEPRO_18,  // mRNA-SynthePro-18
+  GENESCRIPT_RX7,     // GeneScript-RX7
+  SYNTHORNA_ALPHA     // SynthoRNA-Alpha
+} mRNA_t;
+
+// Código Genético Viral (Tipos de Virus)
+typedef enum {
+  VIROGEN_SARS_COV2,  // ViroGen-SARS-CoV2
+  VIROGEN_FLUX,       // ViroGen-FluX
+  VIROGEN_RSV_NX      // ViroGen-RSV-NX
+} viral_code_t;
+
+// Capa Lipídica (Tipos)
+typedef enum {
+  LIPOSHIELD_X3,    // LipoShield-X3
+  LIPIDCORE_ALPHA,  // LipidCore-Alpha
+  NANOLIP_LITE      // NanoLip-Lite
+} lipid_layer_t;
+
+typedef struct {
+  mRNA_t arn;
+  viral_code_t viral_code;
+  lipid_layer_t lipid_layer;
+} vaccine_t;
+
+const char* virus_str[] = {VIRUS_STR_1, VIRUS_STR_2, VIRUS_STR_3};
+const char* arn_str[] = {ARN_STR_1, ARN_STR_2, ARN_STR_3};
+const char* viral_code_str[] = {VIRAL_CODE_STR_1, VIRAL_CODE_STR_2,
+                                VIRAL_CODE_STR_3};
+const char* lipid_layer_str[] = {LIPID_LAYER_STR_1, LIPID_LAYER_STR_2,
+                                 LIPID_LAYER_STR_3};

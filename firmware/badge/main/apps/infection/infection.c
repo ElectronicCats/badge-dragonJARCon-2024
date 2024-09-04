@@ -1,0 +1,202 @@
+#include "infection.h"
+
+#include "badge_connect.h"
+#include "esp_log.h"
+#include "esp_random.h"
+#include "esp_timer.h"
+#include "esp_wifi.h"
+#include "espnow.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "infection_cmd.h"
+#include "infection_screens.h"
+#include "nvs_flash.h"
+#include "preferences.h"
+
+static infection_ctx_t* ctx = NULL;
+
+static void infection_task();
+static void infection_show_screen(infection_event_t event, void* ctx);
+static void save_patient_state();
+static void send_vaccine_req_cmd(uint8_t* addr);
+
+static int get_random_int() {
+  uint32_t entropy = esp_random();
+  uint64_t time_since_boot = esp_timer_get_time();
+  uint32_t seed = (entropy ^ time_since_boot) & 0xFFFFFFFF;
+  srand(seed);
+
+  return rand();
+}
+
+static uint8_t get_random_uint8() {
+  return get_random_int() % 256;
+}
+
+static bool get_random_bool() {
+  return get_random_int() % 2;
+}
+
+static uint8_t get_random_virus() {
+  return get_random_int() % VIRUS_NUM;
+}
+
+void infection_display_status() {
+  infection_show_screen(SHOW_INFECTION_STATE_EV, ctx);
+}
+
+static void get_infected() {
+  ctx->patient->state = INFECTED;
+  ctx->patient->virus = get_random_virus();
+  ctx->patient->remaining_time = LIFE_TIME;
+  xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
+}
+
+static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
+  if (ctx->patient->state == HEALTY) {
+    get_infected();
+  }
+}
+
+static void pairing_req_cmd_handler(badge_connect_recv_msg_t* msg) {
+  pairing_req_cmd_t pairing_cmd;
+  pairing_cmd.cmd = PAIRING_RES_CMD;
+  badge_connect_send(msg->src_addr, &pairing_cmd, sizeof(pairing_req_cmd_t));
+}
+
+static void pairing_res_cmd_handler(badge_connect_recv_msg_t* msg) {
+  send_vaccine_req_cmd(msg->src_addr);
+}
+
+static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {}
+
+static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
+  infection_cmds_t cmd = *((infection_cmds_t*) msg->data);
+  // printf("CMD: %d\n", cmd);
+  switch (cmd) {
+    case VIRUS_CMD:
+      virus_cmd_handler(msg);
+      break;
+    case PAIRING_REQ_CMD:
+      pairing_req_cmd_handler(msg);
+      break;
+    case PAIRING_RES_CMD:
+      pairing_res_cmd_handler(msg);
+      break;
+    case VACCINE_REQ_CMD:
+      vaccine_req_cmd_handler(msg);
+    default:
+      break;
+  }
+}
+
+static void nvs_init() {
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
+      ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(ret);
+}
+static void wifi_init() {
+  esp_event_loop_create_default();
+
+  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+  nvs_init();
+
+  ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+  ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+  ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
+  ESP_ERROR_CHECK(esp_wifi_start());
+}
+
+static void send_virus_cmd() {
+  virus_cmd_t virus_cmd;
+  virus_cmd.cmd = VIRUS_CMD;
+  badge_connect_send(ESPNOW_ADDR_BROADCAST, &virus_cmd, sizeof(virus_cmd_t));
+}
+
+static void send_pairing_req_cmd() {
+  pairing_req_cmd_t pairing_cmd;
+  pairing_cmd.cmd = PAIRING_REQ_CMD;
+  badge_connect_send(ESPNOW_ADDR_BROADCAST, &pairing_cmd,
+                     sizeof(pairing_req_cmd_t));
+}
+
+static void send_vaccine_req_cmd(uint8_t* addr) {
+  vaccine_req_cmd_t vaccine_cmd;
+  vaccine_cmd.cmd = VACCINE_REQ_CMD;
+  vaccine_cmd.vaccine = *ctx->vaccine;
+  badge_connect_send(addr, &vaccine_cmd, sizeof(vaccine_req_cmd_t));
+}
+
+static void infection_task() {
+  while (1) {
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    infection_display_status();
+    save_patient_state();
+    if (ctx->patient->state >= INFECTED) {
+      send_virus_cmd();
+      ctx->patient->remaining_time--;
+    }
+  }
+  vTaskDelete(NULL);
+}
+
+static void save_patient_state() {
+  preferences_put_ushort(STATE_MEM, ctx->patient->state);
+  preferences_put_ushort(VIRUS_MEM, ctx->patient->virus);
+  preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
+  preferences_put_ushort(FRIENDS_SAVED_MEM, ctx->patient->friends_saved_count);
+}
+
+static void load_patient_state() {
+  ctx = malloc(sizeof(infection_ctx_t));
+  ctx->patient = calloc(1, sizeof(patient_t));
+  ctx->vaccine = calloc(1, sizeof(vaccine_t));
+
+  ctx->patient->state = preferences_get_ushort(STATE_MEM, 0);
+  ctx->patient->virus = preferences_get_ushort(VIRUS_MEM, 0);
+  ctx->patient->remaining_time =
+      preferences_get_ushort(LIFETIME_MEM, LIFE_TIME);
+  ctx->patient->friends_saved_count =
+      preferences_get_ushort(FRIENDS_SAVED_MEM, 0);
+  esp_wifi_get_mac(WIFI_IF_STA, ctx->patient->mac);
+  if (ctx->patient->state >= INFECTED) {
+    xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
+  }
+}
+
+void infection_exit() {
+  save_patient_state();
+  free(ctx->patient);
+  free(ctx->vaccine);
+  free(ctx);
+}
+
+void infection_begin() {
+  wifi_init();
+  badge_connect_init();
+  badge_connect_register_recv_cb(infection_cmd_handler);
+  badge_connect_set_bsides_badge();
+  load_patient_state();
+  // get_infected();
+}
+
+static void infection_show_screen(infection_event_t event, void* ctx) {
+  infection_screens_handler(event, ctx);
+}
+
+static void pairing_task() {
+  bool paired = false;
+  while (!paired) {
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    send_pairing_req_cmd();
+  }
+}
+
+void infection_start_pairing() {
+  // xTaskCreate()
+}
