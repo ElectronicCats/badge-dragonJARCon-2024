@@ -1,6 +1,7 @@
 #include "infection.h"
 
 #include "badge_connect.h"
+#include "badge_pairing.h"
 #include "esp_log.h"
 #include "esp_random.h"
 #include "esp_timer.h"
@@ -10,8 +11,10 @@
 #include "freertos/task.h"
 #include "infection_cmd.h"
 #include "infection_screens.h"
+#include "menus_module.h"
 #include "nvs_flash.h"
 #include "preferences.h"
+#include "vaccine_builder/vaccine_builder.h"
 
 static infection_ctx_t* ctx = NULL;
 
@@ -49,6 +52,11 @@ static void get_infected() {
   ctx->patient->state = INFECTED;
   ctx->patient->virus = get_random_virus();
   ctx->patient->remaining_time = LIFE_TIME;
+  menus_module_hide_menu(MENU_INFECTION_VACCINES);
+  menus_module_reveal_menu(MENU_INFECTION_VACCINES_GET);
+  if (menus_module_get_current_menu() != MENU_INFECTION_STATE) {
+    menus_module_set_menu(MENU_INFECTION_STATE);
+  }
   xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
 }
 
@@ -58,17 +66,27 @@ static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   }
 }
 
-static void pairing_req_cmd_handler(badge_connect_recv_msg_t* msg) {
-  pairing_req_cmd_t pairing_cmd;
-  pairing_cmd.cmd = PAIRING_RES_CMD;
-  badge_connect_send(msg->src_addr, &pairing_cmd, sizeof(pairing_req_cmd_t));
+static void print_vaccine(vaccine_t vaccine) {
+  printf("Vaccine: \n");
+  printf("\t- ARN: %s\n", arn_str[vaccine.arn]);
+  printf("\t- Viral Code: %s\n", viral_code_str[vaccine.viral_code]);
+  printf("\t- Lipid Layer: %s\n", lipid_layer_str[vaccine.lipid_layer]);
 }
 
-static void pairing_res_cmd_handler(badge_connect_recv_msg_t* msg) {
-  send_vaccine_req_cmd(msg->src_addr);
+static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
+  vaccine_req_cmd_t cmd = *((vaccine_req_cmd_t*) msg->data);
+  vaccine_t vaccine = cmd.vaccine;
+  print_vaccine(vaccine);
+  if (memcmp(&vaccine, &cure_1, sizeof(vaccine_t)) == 0) {
+    printf("Cura 1\n");
+  } else if (memcmp(&vaccine, &cure_2, sizeof(vaccine_t)) == 0) {
+    printf("Cura 2\n");
+  } else if (memcmp(&vaccine, &cure_3, sizeof(vaccine_t)) == 0) {
+    printf("Cura 3\n");
+  } else {
+    printf("Sin efecto\n");
+  }
 }
-
-static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {}
 
 static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
   infection_cmds_t cmd = *((infection_cmds_t*) msg->data);
@@ -77,15 +95,10 @@ static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
     case VIRUS_CMD:
       virus_cmd_handler(msg);
       break;
-    case PAIRING_REQ_CMD:
-      pairing_req_cmd_handler(msg);
-      break;
-    case PAIRING_RES_CMD:
-      pairing_res_cmd_handler(msg);
-      break;
     case VACCINE_REQ_CMD:
       vaccine_req_cmd_handler(msg);
     default:
+      ping_handler(msg);
       break;
   }
 }
@@ -118,18 +131,12 @@ static void send_virus_cmd() {
   badge_connect_send(ESPNOW_ADDR_BROADCAST, &virus_cmd, sizeof(virus_cmd_t));
 }
 
-static void send_pairing_req_cmd() {
-  pairing_req_cmd_t pairing_cmd;
-  pairing_cmd.cmd = PAIRING_REQ_CMD;
-  badge_connect_send(ESPNOW_ADDR_BROADCAST, &pairing_cmd,
-                     sizeof(pairing_req_cmd_t));
-}
-
-static void send_vaccine_req_cmd(uint8_t* addr) {
+static void send_vaccine_req_cmd() {
   vaccine_req_cmd_t vaccine_cmd;
   vaccine_cmd.cmd = VACCINE_REQ_CMD;
   vaccine_cmd.vaccine = *ctx->vaccine;
-  badge_connect_send(addr, &vaccine_cmd, sizeof(vaccine_req_cmd_t));
+  badge_connect_send(badge_pairing_get_friend_addr(), &vaccine_cmd,
+                     sizeof(vaccine_req_cmd_t));
 }
 
 static void infection_task() {
@@ -167,6 +174,14 @@ static void load_patient_state() {
   if (ctx->patient->state >= INFECTED) {
     xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
   }
+
+  if (ctx->patient->state >= INFECTED) {
+    menus_module_hide_menu(MENU_INFECTION_VACCINES);
+    menus_module_reveal_menu(MENU_INFECTION_VACCINES_GET);
+  } else {
+    menus_module_reveal_menu(MENU_INFECTION_VACCINES);
+    menus_module_hide_menu(MENU_INFECTION_VACCINES_GET);
+  }
 }
 
 void infection_exit() {
@@ -182,6 +197,7 @@ void infection_begin() {
   badge_connect_register_recv_cb(infection_cmd_handler);
   badge_connect_set_bsides_badge();
   load_patient_state();
+  badge_pairing_begin();
   // get_infected();
 }
 
@@ -189,14 +205,22 @@ static void infection_show_screen(infection_event_t event, void* ctx) {
   infection_screens_handler(event, ctx);
 }
 
-static void pairing_task() {
-  bool paired = false;
-  while (!paired) {
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    send_pairing_req_cmd();
-  }
+void infection_start_pairing() {
+  badge_pairing_set_callbacks(send_vaccine_req_cmd, NULL, NULL);
+  badge_pairing_init();
 }
 
-void infection_start_pairing() {
-  // xTaskCreate()
+void infection_stop_pairing() {
+  badge_pairing_set_callbacks(NULL, NULL, NULL);
+  badge_pairing_deinit();
+}
+
+void infection_vaccine_builder_mRNA() {
+  vaccine_builder_begin(mRNA_COMP, &ctx->vaccine->arn);
+}
+void infection_vaccine_builder_viral_code() {
+  vaccine_builder_begin(VIRAL_CODE_COMP, &ctx->vaccine->viral_code);
+}
+void infection_vaccine_builder_Lipid_layer() {
+  vaccine_builder_begin(LIPID_LAYER_COMP, &ctx->vaccine->lipid_layer);
 }

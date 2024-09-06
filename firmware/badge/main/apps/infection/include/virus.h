@@ -1,7 +1,5 @@
 #pragma once
 
-#include "infection.h"
-
 #define VIRUS_STR_1 "ChronoX-12"
 #define VIRUS_STR_2 "ZenoVax-44"
 #define VIRUS_STR_3 "HelioRex-09"
@@ -17,6 +15,10 @@
 #define LIPID_LAYER_STR_1 "LipoShield-X3"
 #define LIPID_LAYER_STR_2 "LipidCore-Alpha"
 #define LIPID_LAYER_STR_3 "NanoLip-Lite"
+
+#define VACCINE_COMP_STR_1 "mRNA"
+#define VACCINE_COMP_STR_2 "Codigo Viral"
+#define VACCINE_COMP_STR_3 "Capa Lipidica"
 
 typedef enum { VIRUS_1, VIRUS_2, VIRUS_3, VIRUS_NUM } virus_t;
 
@@ -41,6 +43,12 @@ typedef enum {
   NANOLIP_LITE      // NanoLip-Lite
 } lipid_layer_t;
 
+typedef enum {
+  mRNA_COMP,
+  VIRAL_CODE_COMP,
+  LIPID_LAYER_COMP
+} vaccine_components_t;
+
 typedef struct {
   mRNA_t arn;
   viral_code_t viral_code;
@@ -53,3 +61,16 @@ const char* viral_code_str[] = {VIRAL_CODE_STR_1, VIRAL_CODE_STR_2,
                                 VIRAL_CODE_STR_3};
 const char* lipid_layer_str[] = {LIPID_LAYER_STR_1, LIPID_LAYER_STR_2,
                                  LIPID_LAYER_STR_3};
+const char* vaccine_comp_str[] = {VACCINE_COMP_STR_1, VACCINE_COMP_STR_2,
+                                  VACCINE_COMP_STR_3};
+const char** components_str[] = {arn_str, viral_code_str, lipid_layer_str};
+
+const vaccine_t cure_1 = {.arn = MRNA_SYNTHEPRO_18,
+                          .viral_code = VIROGEN_SARS_COV2,
+                          .lipid_layer = LIPOSHIELD_X3};
+const vaccine_t cure_2 = {.arn = GENESCRIPT_RX7,
+                          .viral_code = VIROGEN_FLUX,
+                          .lipid_layer = LIPIDCORE_ALPHA};
+const vaccine_t cure_3 = {.arn = SYNTHORNA_ALPHA,
+                          .viral_code = VIROGEN_RSV_NX,
+                          .lipid_layer = NANOLIP_LITE};
