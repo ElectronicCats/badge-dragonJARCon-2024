@@ -50,7 +50,7 @@ void infection_display_status() {
 }
 
 void get_infected() {
-  
+  printf("INFECTED\n");
   ctx->patient->state = INFECTED;
   ctx->patient->virus = get_random_virus();
   ctx->patient->remaining_time = LIFE_TIME;
