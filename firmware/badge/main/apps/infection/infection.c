@@ -10,7 +10,9 @@
 #include "espnow.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "general_submenu.h"
 #include "infection_cmd.h"
+#include "infection_scenes.h"
 #include "infection_screens.h"
 #include "menus_module.h"
 #include "nvs_flash.h"
@@ -50,7 +52,6 @@ void infection_display_status() {
 }
 
 void get_infected() {
-  
   ctx->patient->state = INFECTED;
   ctx->patient->virus = get_random_virus();
   ctx->patient->remaining_time = LIFE_TIME;
@@ -150,7 +151,7 @@ static void infection_task() {
     save_patient_state();
     if (ctx->patient->state >= INFECTED) {
       send_virus_cmd();
-      if(ctx->patient->remaining_time > 0){
+      if (ctx->patient->remaining_time > 0) {
         ctx->patient->remaining_time--;
       }
     }
@@ -229,4 +230,8 @@ void infection_vaccine_builder_viral_code() {
 }
 void infection_vaccine_builder_Lipid_layer() {
   vaccine_builder_begin(LIPID_LAYER_COMP, &ctx->vaccine->lipid_layer);
+}
+
+void infection_scenes_begin() {
+  infection_scenes_main_menu();
 }

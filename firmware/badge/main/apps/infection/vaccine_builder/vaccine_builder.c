@@ -1,6 +1,7 @@
 #include "vaccine_builder.h"
 
 #include "infection.h"
+#include "infection_scenes.h"
 #include "menus_module.h"
 #include "vaccine_builder_screens.h"
 
@@ -20,7 +21,7 @@ static void vaccine_builder_input_cb(uint8_t button_name,
   switch (button_name) {
     case BUTTON_LEFT:
       free(vac_builder_ctx);
-      menus_module_exit_app();
+      infection_scenes_vaccines_menu();
       break;
     case BUTTON_RIGHT:
       break;
