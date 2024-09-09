@@ -48,4 +48,6 @@ hardware/**/*.zip
 /**/sdkconfig.old
 /**/dependencies.lock
 
-firmware/badge/components/badge_connect/
+firmware/badge/components/badge_connect
+
+firmware/badge/components/badge_connect_src

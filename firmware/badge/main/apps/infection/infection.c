@@ -1,4 +1,5 @@
 #include "infection.h"
+#include "engine.h"
 
 #include "badge_connect.h"
 #include "badge_pairing.h"
@@ -48,7 +49,8 @@ void infection_display_status() {
   infection_show_screen(SHOW_INFECTION_STATE_EV, ctx);
 }
 
-static void get_infected() {
+void get_infected() {
+  
   ctx->patient->state = INFECTED;
   ctx->patient->virus = get_random_virus();
   ctx->patient->remaining_time = LIFE_TIME;
@@ -62,7 +64,9 @@ static void get_infected() {
 
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   if (ctx->patient->state == HEALTY) {
-    get_infected();
+    ctx->patient->state = IDLE;
+    engine_infection_alert();
+    // get_infected();
   }
 }
 
@@ -146,7 +150,9 @@ static void infection_task() {
     save_patient_state();
     if (ctx->patient->state >= INFECTED) {
       send_virus_cmd();
-      ctx->patient->remaining_time--;
+      if(ctx->patient->remaining_time > 0){
+        ctx->patient->remaining_time--;
+      }
     }
   }
   vTaskDelete(NULL);

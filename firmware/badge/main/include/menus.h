@@ -447,7 +447,7 @@ menu_t menus[] = {  //////////////////////////////////
      .on_exit_cb = NULL,
      .is_visible = true},
 #endif
-    {.display_name = "Infeccion",
+    {.display_name = "Dragon Quest",
      .menu_idx = MENU_INFECTION,
      .parent_idx = MENU_APPLICATIONS,
      .last_selected_submenu = 0,

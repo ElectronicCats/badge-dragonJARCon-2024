@@ -1,8 +1,8 @@
 #pragma once
 
-#define VIRUS_STR_1 "ChronoX-12"
-#define VIRUS_STR_2 "ZenoVax-44"
-#define VIRUS_STR_3 "HelioRex-09"
+#define VIRUS_STR_1 "Mamba"
+#define VIRUS_STR_2 "WannaCry"
+#define VIRUS_STR_3 "Petya"
 
 #define ARN_STR_1 "mRNA-SynthePro-18"
 #define ARN_STR_2 "GeneScript-RX7"

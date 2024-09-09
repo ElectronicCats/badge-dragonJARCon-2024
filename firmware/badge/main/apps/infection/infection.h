@@ -16,6 +16,7 @@
 
 typedef enum {
   HEALTY,
+  IDLE,
   VACCINATED,
   INFECTED,  // Fase 1
   CRITICAL,  // Fase 2
@@ -35,11 +36,12 @@ typedef struct {
   vaccine_t* vaccine;
 } infection_ctx_t;
 
-char* patient_states_str[] = {"Healty", "Vaccinated", "Infected", "Critical",
-                              "Terminal"};
+char* patient_states_str[] = {"Sano", "Vacunado", "Infectado", "Critico", "Terminal"};
 
 void infection_begin();
 void infection_display_status();
+
+void get_infected();
 
 void infection_start_pairing();
 void infection_stop_pairing();
