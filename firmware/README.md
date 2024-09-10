@@ -40,13 +40,25 @@ Using SSH:
 git clone git@github.com:ElectronicCats/badge-dragonJARCon-2024.git
 ```
 
-2. Change to the firmware directory:
+2. Change to the project directory:
 
 ```bash
-cd badge-dragonJARCon-2024/firmware
+cd badge-dragonJARCon-2024
 ```
 
-3. Set the IDF_PATH environment variable:
+3. Get the submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+4. Change to the firmware directory:
+
+```bash
+cd firmware
+```
+
+5. Set the IDF_PATH environment variable:
 
 ```bash
 get_idf
@@ -54,7 +66,7 @@ get_idf
 
 > **Note:** `get_idf` should be an alias you created if you followed the [ESP-IDF installation guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html).
 
-4. Set the Minino environment variable. This project uses the [Minino](https://github.com/ElectronicCats/Minino) firmware codebase. You have to clone it somewhere in your computer and get the path to its firmware directory. For example:
+6. Set the Minino environment variable. This project uses the [Minino](https://github.com/ElectronicCats/Minino) firmware codebase. You have to clone it somewhere in your computer and get the path to its firmware directory. For example:
 
 ```bash
 /Users/user/Minino/firmware
@@ -68,7 +80,7 @@ export MININO_PATH=/Users/user/Minino/firmware
 
 > **Note:** Replace `/Users/user/Minino/firmware` with the path to your Minino firmware directory, not the root directory of the Minino repository.
 
-4. Setup the project environment:
+7. Setup the project environment:
 
 ```bash
 make setup
