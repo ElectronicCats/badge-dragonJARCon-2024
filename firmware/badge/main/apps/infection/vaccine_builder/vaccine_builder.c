@@ -21,7 +21,7 @@ static void vaccine_builder_input_cb(uint8_t button_name,
   switch (button_name) {
     case BUTTON_LEFT:
       free(vac_builder_ctx);
-      infection_scenes_vaccines_menu();
+      infection_scenes_vaccines_builder_menu();
       break;
     case BUTTON_RIGHT:
       break;

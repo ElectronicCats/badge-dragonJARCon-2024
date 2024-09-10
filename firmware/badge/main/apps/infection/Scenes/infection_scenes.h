@@ -3,4 +3,4 @@
 #include <stdio.h>
 
 void infection_scenes_main_menu();
-void infection_scenes_vaccines_menu();
+void infection_scenes_vaccines_builder_menu();

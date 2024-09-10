@@ -65,8 +65,10 @@ void get_infected() {
 
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   if (ctx->patient->state == HEALTY) {
-    ctx->patient->state = IDLE;
-    engine_infection_alert();
+    if (get_random_uint8() % 100 == 0) {
+      ctx->patient->state = IDLE;
+      engine_infection_alert();
+    }
     // get_infected();
   }
 }
@@ -234,4 +236,8 @@ void infection_vaccine_builder_Lipid_layer() {
 
 void infection_scenes_begin() {
   infection_scenes_main_menu();
+}
+
+patient_state_t infection_get_patient_state() {
+  return ctx->patient->state;
 }
