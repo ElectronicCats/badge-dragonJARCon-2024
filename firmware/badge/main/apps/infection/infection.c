@@ -65,7 +65,7 @@ void get_infected() {
 
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   if (ctx->patient->state == HEALTY) {
-    if (get_random_uint8() % 100 == 0) {
+    if (get_random_uint8() % 10 == 0) {
       ctx->patient->state = IDLE;
       engine_infection_alert();
     }
@@ -81,6 +81,9 @@ static void print_vaccine(vaccine_t vaccine) {
 }
 
 static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
+  if (!ctx->patient->state >= INFECTED) {
+    return;
+  }
   vaccine_req_cmd_t cmd = *((vaccine_req_cmd_t*) msg->data);
   vaccine_t vaccine = cmd.vaccine;
   print_vaccine(vaccine);
@@ -139,6 +142,9 @@ static void send_virus_cmd() {
 }
 
 static void send_vaccine_req_cmd() {
+  if (ctx->patient->state >= INFECTED) {
+    return;
+  }
   vaccine_req_cmd_t vaccine_cmd;
   vaccine_cmd.cmd = VACCINE_REQ_CMD;
   vaccine_cmd.vaccine = *ctx->vaccine;
