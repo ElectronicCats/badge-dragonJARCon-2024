@@ -2,6 +2,7 @@
 #include "esp_random.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "general/bitmaps_general.h"
 #include "menus_module.h"
 #include "screen_saver.h"
 
@@ -18,6 +19,9 @@ static uint16_t current_item = 0;
 static uint16_t keyboard_combination[8] = {
     BUTTON_UP,   BUTTON_UP,    BUTTON_DOWN, BUTTON_DOWN,
     BUTTON_LEFT, BUTTON_RIGHT, BUTTON_LEFT, BUTTON_RIGHT};
+static unsigned char bitmaps_keyboard[4] = {
+    epd_bitmap_arrow_left, epd_bitmap_arrow_right, epd_bitmap_arrow_up,
+    epd_bitmap_arrow_down};
 static uint16_t keyboard_combination_user[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 static uint8_t keyboard_combination_index = 0;
 static enum {
@@ -109,6 +113,16 @@ static void engine_infection_vaccine_dice() {
   }
 }
 
+static void engine_infection_display_arrows_keys() {
+  for (int i = 0; i < 8; i++) {
+    if (keyboard_combination_user[i] != 0) {
+      oled_screen_display_bitmap(
+          bitmaps_keyboard[1 - keyboard_combination_user[i]], 16, (18 * i),
+          OLED_DISPLAY_NORMAL);
+    }
+  }
+}
+
 static void engine_infection_keyboard_combination_fail() {
   genera_screen_display_notify_information("Error",
                                            "La combinacion es incorrecta");
@@ -128,15 +142,19 @@ static void engine_handler_keyboard_combination(uint8_t button_name,
   switch (button_name) {
     case BUTTON_UP:
       keyboard_combination_user[keyboard_combination_index] = BUTTON_UP;
+      engine_infection_display_arrows_keys();
       break;
     case BUTTON_DOWN:
       keyboard_combination_user[keyboard_combination_index] = BUTTON_DOWN;
+      engine_infection_display_arrows_keys();
       break;
     case BUTTON_LEFT:
       keyboard_combination_user[keyboard_combination_index] = BUTTON_LEFT;
+      engine_infection_display_arrows_keys();
       break;
     case BUTTON_RIGHT:
       keyboard_combination_user[keyboard_combination_index] = BUTTON_RIGHT;
+      engine_infection_display_arrows_keys();
       break;
     default:
       break;
