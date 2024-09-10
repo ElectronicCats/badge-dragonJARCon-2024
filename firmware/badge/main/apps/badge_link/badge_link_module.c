@@ -123,37 +123,33 @@ void badge_link_module_send_data() {
   vTaskDelay(SEND_DATA_DELAY_MS / portTICK_PERIOD_MS);
 }
 
-void badge_link_keyboard_cb(button_event_t button_pressed) {
-  // >> 4 to get the button number
-  uint8_t button_name = (((button_event_t) button_pressed) >> 4);
-  // & 0x0F to get the event number without the mask
-  uint8_t button_event = ((button_event_t) button_pressed) & 0x0F;
+void badge_link_keyboard_cb(uint8_t button_name, uint8_t button_event) {
+  ESP_LOGI(TAG, "Button name: %d, event: %d", button_name, button_event);
+  if (button_event != BUTTON_PRESS_DOWN) {
+    return;
+  }
 
   switch (button_name) {
     case BUTTON_LEFT:
-      if (button_event == BUTTON_SINGLE_CLICK) {
-        if (badge_link_status != BADGE_LINK_FOUND_TEXT &&
-            badge_link_status != BADGE_LINK_FOUND_LOGO) {
-          badge_link_module_exit();
-        }
+      if (badge_link_status != BADGE_LINK_FOUND_TEXT &&
+          badge_link_status != BADGE_LINK_FOUND_LOGO) {
+        badge_link_module_exit();
       }
       break;
     case BUTTON_RIGHT:
-      if (button_event == BUTTON_SINGLE_CLICK) {
-        switch (badge_link_status) {
-          case BADGE_LINK_FOUND_TEXT:
-            badge_link_status = BADGE_LINK_FOUND_LOGO;
-            break;
-          case BADGE_LINK_FOUND_LOGO:
-            badge_link_status = BADGE_LINK_UNLOCK_FEATURE;
-            break;
-          case BADGE_LINK_NOT_FOUND:
-          case BADGE_LINK_UNLOCK_FEATURE:
-            badge_link_module_exit();
-            break;
-          default:
-            break;
-        }
+      switch (badge_link_status) {
+        case BADGE_LINK_FOUND_TEXT:
+          badge_link_status = BADGE_LINK_FOUND_LOGO;
+          break;
+        case BADGE_LINK_FOUND_LOGO:
+          badge_link_status = BADGE_LINK_UNLOCK_FEATURE;
+          break;
+        case BADGE_LINK_NOT_FOUND:
+        case BADGE_LINK_UNLOCK_FEATURE:
+          badge_link_module_exit();
+          break;
+        default:
+          break;
       }
       break;
     default:
@@ -191,6 +187,7 @@ void badge_link_module_begin() {
   // Set the badge type to BSides, DragonJAR, Ekoparty, or BugCon
   // See README.md or badge_connect.h for more information
   badge_connect_set_bsides_badge();
+  // badge_connect_set_dragonjar_badge();
   xTaskCreate(badge_link_state_machine_task, "badge_link_state_machine_task",
               4096, NULL, 4, &badge_link_state_machine_task_handle);
 }

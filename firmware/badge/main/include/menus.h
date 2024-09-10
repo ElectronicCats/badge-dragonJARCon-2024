@@ -7,6 +7,7 @@
 #include "trackers_module.h"
 #include "z_switch_module.h"
 
+#include "badge_link_module.h"
 #include "badge_link_screens_module.h"
 #include "catdos_module.h"
 #include "deauth_module.h"
@@ -447,7 +448,7 @@ menu_t menus[] = {  //////////////////////////////////
      .menu_idx = MENU_BADGE_FINDER_SCAN,
      .parent_idx = MENU_BADGE_FINDER,
      .last_selected_submenu = 0,
-     .on_enter_cb = NULL,
+     .on_enter_cb = badge_link_module_begin,
      .on_exit_cb = NULL,
      .is_visible = true},
     {.display_name = "Ayuda",
