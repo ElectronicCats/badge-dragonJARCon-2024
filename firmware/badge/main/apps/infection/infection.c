@@ -142,7 +142,7 @@ static void send_virus_cmd() {
 }
 
 static void send_vaccine_req_cmd() {
-  if (ctx->patient->state >= INFECTED) {
+  if (!(ctx->patient->state >= INFECTED)) {
     return;
   }
   vaccine_req_cmd_t vaccine_cmd;

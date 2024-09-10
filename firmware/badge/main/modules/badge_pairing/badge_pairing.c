@@ -53,8 +53,7 @@ static void send_ping_response() {
   ping_cmd.ping_salt = PING_SALT;
   ping_cmd.ping_hash = PING_HASH;
   ping_cmd.is_request = false;
-  badge_connect_send(ctx->state ? ctx->friend_addr : ESPNOW_ADDR_BROADCAST,
-                     &ping_cmd, sizeof(pairing_ping_cmd_t));
+  badge_connect_send(ctx->friend_addr, &ping_cmd, sizeof(pairing_ping_cmd_t));
 }
 
 static void get_ping_response(badge_connect_recv_msg_t* msg) {
