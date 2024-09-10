@@ -186,8 +186,8 @@ void badge_link_module_begin() {
   badge_connect_register_recv_cb(badge_link_receive_data_cb);
   // Set the badge type to BSides, DragonJAR, Ekoparty, or BugCon
   // See README.md or badge_connect.h for more information
-  badge_connect_set_bsides_badge();
-  // badge_connect_set_dragonjar_badge();
+  // badge_connect_set_bsides_badge();
+  badge_connect_set_dragonjar_badge();
   xTaskCreate(badge_link_state_machine_task, "badge_link_state_machine_task",
               4096, NULL, 4, &badge_link_state_machine_task_handle);
 }
