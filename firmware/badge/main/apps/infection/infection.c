@@ -81,7 +81,7 @@ static void print_vaccine(vaccine_t vaccine) {
 }
 
 static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
-  if (!ctx->patient->state >= INFECTED) {
+  if (ctx->patient->state >= INFECTED) {
     return;
   }
   vaccine_req_cmd_t cmd = *((vaccine_req_cmd_t*) msg->data);
