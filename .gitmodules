@@ -1,0 +1,4 @@
+[submodule "firmware/badge/components/badge_connect"]
+	path = firmware/badge/components/badge_connect
+	url = git@github.com:ElectronicCats/badge_connect_bin.git
+  branch = main
