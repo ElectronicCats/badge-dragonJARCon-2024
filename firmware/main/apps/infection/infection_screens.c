@@ -7,11 +7,10 @@
 static void show_infection_state(infection_ctx_t* ctx) {
   if (menus_module_get_current_menu() != MENU_INFECTION_STATE) {
     char* str = (char*) malloc(20);
-    if ((ctx->patient->remaining_time / 60) == 0 &&
-        (ctx->patient->remaining_time % 60) == 0) {
+    if (ctx->patient->remaining_time == 0) {
       sprintf(str, "Infectado");
     } else {
-      sprintf(str, "Restante: %02d:%02d", ctx->patient->remaining_time / 60,
+      sprintf(str, "%02d:%02d", ctx->patient->remaining_time / 60,
               ctx->patient->remaining_time % 60);
     }
     oled_screen_display_text(str, 88, 0, OLED_DISPLAY_NORMAL);
