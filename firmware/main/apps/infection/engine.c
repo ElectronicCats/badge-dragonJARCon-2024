@@ -2,6 +2,7 @@
 #include "esp_random.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "infection_scenes.h"
 #include "menus_module.h"
 #include "screen_saver.h"
 
@@ -64,6 +65,9 @@ static void engine_infection_vaccine_stop_timer() {
 static void engine_infection_vaccine_start_timer() {
   while (combination_infect) {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    if (!combination_infect) {
+      break;
+    }
     infection_time--;
     char infection_time_str[18];
     sprintf(infection_time_str, "Restante: %d", infection_time);
@@ -146,15 +150,19 @@ static void engine_handler_keyboard_combination(uint8_t button_name,
     keyboard_combination_index = 0;
     for (int i = 0; i < 8; i++) {
       if (keyboard_combination[i] != keyboard_combination_user[i]) {
+        engine_infection_vaccine_stop_timer();
         engine_infection_keyboard_combination_fail();
         return;
       }
     }
     engine_infection_vaccine_stop_timer();
     engine_infection_keyboard_combination_done();
-    general_register_menu(&vaccin_menu);
-    menus_module_set_app_state(true, engine_handler_keyboard);
-    general_screen_display_menu(current_item);
+    infection_set_inmunity_time();
+    infection_set_patient_state(HEALTY);
+    infection_scenes_main_menu();
+    // general_register_menu(&vaccin_menu);
+    // menus_module_set_app_state(true, engine_handler_keyboard);
+    // general_screen_display_menu(current_item);
     return;
   }
 }

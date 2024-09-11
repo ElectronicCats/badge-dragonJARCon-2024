@@ -29,6 +29,7 @@ typedef struct {
   virus_t virus;
   uint16_t remaining_time;
   uint16_t friends_saved_count;
+  uint8_t inmunity;
 } patient_t;
 
 typedef struct {
@@ -52,3 +53,5 @@ void infection_vaccine_builder_Lipid_layer();
 patient_state_t infection_get_patient_state();
 
 void send_vaccine_req_cmd();
+void infection_set_inmunity_time();
+void infection_set_patient_state(patient_state_t state);

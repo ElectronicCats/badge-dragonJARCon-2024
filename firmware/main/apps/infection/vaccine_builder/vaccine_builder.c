@@ -24,6 +24,8 @@ static void vaccine_builder_input_cb(uint8_t button_name,
       infection_scenes_vaccines_builder_menu();
       break;
     case BUTTON_RIGHT:
+      free(vac_builder_ctx);
+      infection_scenes_vaccines_builder_menu();
       break;
     case BUTTON_UP:
       (*vac_builder_ctx->comp_ptr) = (*vac_builder_ctx->comp_ptr)-- == 0

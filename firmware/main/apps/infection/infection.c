@@ -56,17 +56,18 @@ void get_infected() {
   ctx->patient->state = INFECTED;
   ctx->patient->virus = get_random_virus();
   ctx->patient->remaining_time = LIFE_TIME;
-  menus_module_hide_menu(MENU_INFECTION_VACCINES);
-  menus_module_reveal_menu(MENU_INFECTION_VACCINES_GET);
-  if (menus_module_get_current_menu() != MENU_INFECTION_STATE) {
-    menus_module_set_menu(MENU_INFECTION_STATE);
-  }
   xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
+  infection_scenes_vaccines_receiver_help();
 }
 
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
+  if (ctx->patient->inmunity > 0) {
+    ctx->patient->inmunity--;
+    printf("INMUNITY: %d\n", ctx->patient->inmunity);
+    return;
+  }
   if (ctx->patient->state == HEALTY) {
-    if (get_random_uint8() % 100 == 0) {
+    if (get_random_uint8() % 5 == 0) {
       ctx->patient->state = IDLE;
       vaccination_exit();
       engine_infection_alert();
@@ -89,6 +90,8 @@ static void get_vaccinated() {
   preferences_put_ushort(STATE_MEM, ctx->patient->state);
   preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
   genera_screen_display_card_information("Curado", "Ayuda a los demas");
+  vTaskDelay(pdMS_TO_TICKS(2500));
+  infection_scenes_vaccines_builder_help();
 }
 
 static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
@@ -110,9 +113,9 @@ static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
   } else {
     vaccination_exit();
     genera_screen_display_card_information("Sin efecto", "");
+    vTaskDelay(pdMS_TO_TICKS(2500));
+    infection_scenes_vaccines_receiver_menu();
   }
-  vTaskDelay(pdMS_TO_TICKS(2500));
-  infection_scenes_vaccines_receiver_menu();
 }
 
 static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
@@ -205,6 +208,7 @@ static void load_patient_state() {
   ctx->patient->friends_saved_count =
       preferences_get_ushort(FRIENDS_SAVED_MEM, 0);
   esp_wifi_get_mac(WIFI_IF_STA, ctx->patient->mac);
+  ctx->patient->inmunity = 0;
   if (ctx->patient->state >= INFECTED) {
     xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
   }
@@ -255,4 +259,13 @@ void infection_scenes_begin() {
 
 patient_state_t infection_get_patient_state() {
   return ctx->patient->state;
+}
+
+void infection_set_inmunity_time() {
+  ctx->patient->inmunity = MAX(get_random_uint8(), 100);
+}
+
+void infection_set_patient_state(patient_state_t state) {
+  ctx->patient->state = state;
+  preferences_put_ushort(STATE_MEM, state);
 }
