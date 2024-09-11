@@ -16,7 +16,7 @@ typedef struct {
   uint8_t state;
   uint8_t progress;
   bool role;
-  volatile bool is_task_running;
+  bool is_task_running;
 } vaccination_ctx_t;
 
 void vaccination_begin();

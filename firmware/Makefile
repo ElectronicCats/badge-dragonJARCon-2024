@@ -17,6 +17,10 @@ flash:
 	make test_port
 	idf.py -p $(PORT) flash
 
+format:
+	make test_port
+	idf.py -p $(PORT) erase-flash
+
 monitor:
 	make test_port
 	idf.py -p $(PORT) monitor

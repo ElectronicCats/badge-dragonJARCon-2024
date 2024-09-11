@@ -17,6 +17,7 @@
 #include "menus_module.h"
 #include "nvs_flash.h"
 #include "preferences.h"
+#include "vaccination.h"
 #include "vaccine_builder/vaccine_builder.h"
 
 static infection_ctx_t* ctx = NULL;
@@ -65,8 +66,9 @@ void get_infected() {
 
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   if (ctx->patient->state == HEALTY) {
-    if (get_random_uint8() % 10 == 0) {
+    if (get_random_uint8() % 100 == 0) {
       ctx->patient->state = IDLE;
+      vaccination_exit();
       engine_infection_alert();
     }
     // get_infected();
@@ -80,22 +82,37 @@ static void print_vaccine(vaccine_t vaccine) {
   printf("\t- Lipid Layer: %s\n", lipid_layer_str[vaccine.lipid_layer]);
 }
 
+static void get_healty() {
+  vaccination_exit();
+  ctx->patient->state = HEALTY;
+  ctx->patient->remaining_time = LIFE_TIME;
+  preferences_put_ushort(STATE_MEM, ctx->patient->state);
+  preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
+  genera_screen_display_card_information("Curado", "Ayuda a los demas");
+}
+
 static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
-  if (ctx->patient->state >= INFECTED) {
+  if (!(ctx->patient->state >= INFECTED)) {
     return;
   }
   vaccine_req_cmd_t cmd = *((vaccine_req_cmd_t*) msg->data);
   vaccine_t vaccine = cmd.vaccine;
-  print_vaccine(vaccine);
-  if (memcmp(&vaccine, &cure_1, sizeof(vaccine_t)) == 0) {
-    printf("Cura 1\n");
-  } else if (memcmp(&vaccine, &cure_2, sizeof(vaccine_t)) == 0) {
-    printf("Cura 2\n");
-  } else if (memcmp(&vaccine, &cure_3, sizeof(vaccine_t)) == 0) {
-    printf("Cura 3\n");
+  // print_vaccine(vaccine);
+  if (memcmp(&vaccine, &cure_1, sizeof(vaccine_t)) == 0 &&
+      ctx->patient->virus == VIRUS_1) {
+    get_healty();
+  } else if (memcmp(&vaccine, &cure_2, sizeof(vaccine_t)) == 0 &&
+             ctx->patient->virus == VIRUS_2) {
+    get_healty();
+  } else if (memcmp(&vaccine, &cure_3, sizeof(vaccine_t)) == 0 &&
+             ctx->patient->virus == VIRUS_3) {
+    get_healty();
   } else {
-    printf("Sin efecto\n");
+    vaccination_exit();
+    genera_screen_display_card_information("Sin efecto", "");
   }
+  vTaskDelay(pdMS_TO_TICKS(2500));
+  infection_scenes_vaccines_receiver_menu();
 }
 
 static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
@@ -142,7 +159,7 @@ static void send_virus_cmd() {
 }
 
 void send_vaccine_req_cmd() {
-  if (!(ctx->patient->state >= INFECTED)) {
+  if (ctx->patient->state >= INFECTED) {
     return;
   }
   vaccine_req_cmd_t vaccine_cmd;
@@ -150,6 +167,10 @@ void send_vaccine_req_cmd() {
   vaccine_cmd.vaccine = *ctx->vaccine;
   badge_connect_send(badge_pairing_get_friend_addr(), &vaccine_cmd,
                      sizeof(vaccine_req_cmd_t));
+  vaccination_exit();
+  genera_screen_display_notify_information("Vacuna enviada", "");
+  vTaskDelay(pdMS_TO_TICKS(2000));
+  infection_scenes_vaccines_builder_menu();
 }
 
 static void infection_task() {

@@ -29,14 +29,6 @@ static void show_waiting_screen() {
   show_scaning_dots(52, 3);
 }
 
-static void vaccination_task() {
-  while (ctx->is_task_running) {
-    show_waiting_screen();
-    vTaskDelay(pdMS_TO_TICKS(200));
-  }
-  vTaskDelete(NULL);
-}
-
 static void vaccination_input_cb(uint8_t button_name, uint8_t button_event) {
   if (button_event != BUTTON_DOWN) {
     return;
@@ -50,31 +42,39 @@ static void vaccination_input_cb(uint8_t button_name, uint8_t button_event) {
   }
 }
 
+static void vaccination_task() {
+  while (ctx != NULL) {
+    show_waiting_screen();
+    vTaskDelay(pdMS_TO_TICKS(200));
+  }
+  vTaskDelete(NULL);
+}
+
 void vaccination_exit() {
   if (ctx == NULL) {
     return;
   }
   bool role = ctx->role;
-  ctx->is_task_running = false;
-  vTaskDelay(10);
   free(ctx);
+  ctx = NULL;
   menus_module_set_app_state(false, NULL);
   badge_pairing_set_callbacks(NULL, NULL, NULL);
   badge_pairing_deinit();
-  if (role) {
-    infection_scenes_vaccines_builder_menu();
-  } else {
-    infection_scenes_vaccines_receiver_menu();
-  }
 }
 
 void vaccination_begin() {
   badge_pairing_set_callbacks(send_vaccine_req_cmd, NULL, NULL);
   badge_pairing_init();
+
   menus_module_set_app_state(true, vaccination_input_cb);
   ctx = calloc(1, sizeof(vaccination_ctx_t));
   ctx->role =
       infection_get_patient_state() >= INFECTED ? RECIPIENT : VACCINATOR;
+  if (ctx->role) {
+    badge_pairing_set_blue_team();
+  } else {
+    badge_pairing_set_red_team();
+  }
   ctx->is_task_running = true;
   xTaskCreate(vaccination_task, "vaccination_task", 2048, NULL, 10, NULL);
 }
