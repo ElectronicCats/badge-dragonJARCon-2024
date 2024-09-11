@@ -36,6 +36,11 @@ static void vaccination_input_cb(uint8_t button_name, uint8_t button_event) {
   switch (button_name) {
     case BUTTON_LEFT:
       vaccination_exit();
+      if (infection_get_patient_state() >= INFECTED) {
+        infection_scenes_vaccines_receiver_menu();
+      } else {
+        infection_scenes_vaccines_builder_menu();
+      }
       break;
     default:
       break;

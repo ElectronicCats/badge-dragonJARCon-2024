@@ -82,9 +82,9 @@ static void print_vaccine(vaccine_t vaccine) {
   printf("\t- Lipid Layer: %s\n", lipid_layer_str[vaccine.lipid_layer]);
 }
 
-static void get_healty() {
+static void get_vaccinated() {
   vaccination_exit();
-  ctx->patient->state = HEALTY;
+  ctx->patient->state = VACCINATED;
   ctx->patient->remaining_time = LIFE_TIME;
   preferences_put_ushort(STATE_MEM, ctx->patient->state);
   preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
@@ -100,13 +100,13 @@ static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
   // print_vaccine(vaccine);
   if (memcmp(&vaccine, &cure_1, sizeof(vaccine_t)) == 0 &&
       ctx->patient->virus == VIRUS_1) {
-    get_healty();
+    get_vaccinated();
   } else if (memcmp(&vaccine, &cure_2, sizeof(vaccine_t)) == 0 &&
              ctx->patient->virus == VIRUS_2) {
-    get_healty();
+    get_vaccinated();
   } else if (memcmp(&vaccine, &cure_3, sizeof(vaccine_t)) == 0 &&
              ctx->patient->virus == VIRUS_3) {
-    get_healty();
+    get_vaccinated();
   } else {
     vaccination_exit();
     genera_screen_display_card_information("Sin efecto", "");
@@ -174,15 +174,13 @@ void send_vaccine_req_cmd() {
 }
 
 static void infection_task() {
-  while (1) {
+  while (ctx->patient->state >= INFECTED) {
     vTaskDelay(pdMS_TO_TICKS(1000));
     infection_display_status();
     save_patient_state();
-    if (ctx->patient->state >= INFECTED) {
-      send_virus_cmd();
-      if (ctx->patient->remaining_time > 0) {
-        ctx->patient->remaining_time--;
-      }
+    send_virus_cmd();
+    if (ctx->patient->remaining_time > 0) {
+      ctx->patient->remaining_time--;
     }
   }
   vTaskDelete(NULL);
