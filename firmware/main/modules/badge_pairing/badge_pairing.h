@@ -46,3 +46,4 @@ void badge_pairing_set_callbacks(badge_pairing_event_cb_t on_connect_cb,
                                  badge_pairing_event_cb_t on_pairing_end_cb);
 uint8_t* badge_pairing_get_friend_addr();
 void ping_handler(badge_connect_recv_msg_t* msg);
+void badge_pairing_reset();
