@@ -45,11 +45,10 @@ void infection_display_status();
 
 void get_infected();
 
-void infection_start_pairing();
-void infection_stop_pairing();
-
 void infection_vaccine_builder_mRNA();
 void infection_vaccine_builder_viral_code();
 void infection_vaccine_builder_Lipid_layer();
 
 patient_state_t infection_get_patient_state();
+
+void send_vaccine_req_cmd();

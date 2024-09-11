@@ -24,7 +24,7 @@ static infection_ctx_t* ctx = NULL;
 static void infection_task();
 static void infection_show_screen(infection_event_t event, void* ctx);
 static void save_patient_state();
-static void send_vaccine_req_cmd(uint8_t* addr);
+void send_vaccine_req_cmd();
 
 static int get_random_int() {
   uint32_t entropy = esp_random();
@@ -141,7 +141,7 @@ static void send_virus_cmd() {
   badge_connect_send(ESPNOW_ADDR_BROADCAST, &virus_cmd, sizeof(virus_cmd_t));
 }
 
-static void send_vaccine_req_cmd() {
+void send_vaccine_req_cmd() {
   if (!(ctx->patient->state >= INFECTED)) {
     return;
   }
@@ -218,16 +218,6 @@ void infection_begin() {
 
 static void infection_show_screen(infection_event_t event, void* ctx) {
   infection_screens_handler(event, ctx);
-}
-
-void infection_start_pairing() {
-  badge_pairing_set_callbacks(send_vaccine_req_cmd, NULL, NULL);
-  badge_pairing_init();
-}
-
-void infection_stop_pairing() {
-  badge_pairing_set_callbacks(NULL, NULL, NULL);
-  badge_pairing_deinit();
 }
 
 void infection_vaccine_builder_mRNA() {

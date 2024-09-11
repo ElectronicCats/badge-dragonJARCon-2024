@@ -4,6 +4,7 @@
 #include "general_submenu.h"
 #include "infection.h"
 #include "menus_module.h"
+#include "vaccination.h"
 
 void infection_scenes_vaccines_builder_menu();
 void infection_scenes_vaccines_builder_help();
@@ -100,7 +101,7 @@ static void vaccines_builder_menu_selection_handler(uint8_t selection) {
       infection_vaccine_builder_Lipid_layer();
       break;
     case ADMINISTER_VACCINE_OPTION:
-      infection_start_pairing();
+      vaccination_begin();
       break;
     case VACCINES_BUILD_HELP_OPTION:
       infection_scenes_vaccines_builder_help();
@@ -176,7 +177,7 @@ const char* infection_receiver_menu_items[] = {"Recibir Vacuna", "Tirar Dados",
 static void vaccines_receiver_menu_selection_handler(uint8_t selection) {
   switch (selection) {
     case RECEIVER_OPTION:
-      infection_start_pairing();
+      vaccination_begin();
       break;
     case DICE_OPTION:
       break;
