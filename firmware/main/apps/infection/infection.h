@@ -55,3 +55,4 @@ patient_state_t infection_get_patient_state();
 void send_vaccine_req_cmd();
 void infection_set_inmunity_time();
 void infection_set_patient_state(patient_state_t state);
+infection_ctx_t* infection_get_context();

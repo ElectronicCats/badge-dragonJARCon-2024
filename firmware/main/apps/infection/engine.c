@@ -70,7 +70,7 @@ static void engine_infection_vaccine_start_timer() {
     }
     infection_time--;
     char infection_time_str[18];
-    sprintf(infection_time_str, "Restante: %d", infection_time);
+    sprintf(infection_time_str, "Restante: %02d", infection_time);
     oled_screen_display_text(infection_time_str, 0, 0, OLED_DISPLAY_NORMAL);
     if (infection_time == 0) {
       engine_infection_vaccine_stop_timer();
@@ -209,6 +209,7 @@ static void engine_handler_keyboard(uint8_t button_name, uint8_t button_event) {
 
 void engine_infection_alert() {
   screen_saver_stop();
+  menus_module_disable_input();
   genera_screen_display_notify_information(
       "Alerta", "En proceso de infeccion, por favor mantenga la calma");
   vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -216,9 +217,10 @@ void engine_infection_alert() {
       "Alerta", "Soluciona el reto para evitar la infeccion");
   vTaskDelay(2000 / portTICK_PERIOD_MS);
   combination_infect = true;
-
+  menus_module_enable_input();
   xTaskCreate(engine_infection_vaccine_start_timer, "infection_vaccine_timer",
               4096, NULL, 10, NULL);
 
   menus_module_set_app_state(true, engine_handler_keyboard_combination);
+  oled_screen_clear();
 }

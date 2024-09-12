@@ -269,3 +269,7 @@ void infection_set_patient_state(patient_state_t state) {
   ctx->patient->state = state;
   preferences_put_ushort(STATE_MEM, state);
 }
+
+infection_ctx_t* infection_get_context() {
+  return ctx;
+}
