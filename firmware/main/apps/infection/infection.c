@@ -36,7 +36,7 @@ static int get_random_int() {
   return rand();
 }
 
-static uint8_t get_random_uint8() {
+uint8_t get_random_uint8() {
   return get_random_int() % 256;
 }
 
@@ -52,7 +52,7 @@ void infection_display_status() {
   infection_show_screen(SHOW_INFECTION_STATE_EV, ctx);
 }
 
-void get_infected() {
+void infection_get_infected() {
   ctx->patient->state = INFECTED;
   ctx->patient->virus = get_random_virus();
   ctx->patient->remaining_time = LIFE_TIME;
@@ -68,11 +68,12 @@ static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   }
   if (ctx->patient->state == HEALTY) {
     if (get_random_uint8() % 5 == 0) {
-      ctx->patient->state = IDLE;
+      ctx->patient->state = INFECTED;
+      save_patient_state();
       vaccination_exit();
       engine_infection_alert();
     }
-    // get_infected();
+    // infection_get_infected();
   }
 }
 
@@ -83,13 +84,13 @@ static void print_vaccine(vaccine_t vaccine) {
   printf("\t- Lipid Layer: %s\n", lipid_layer_str[vaccine.lipid_layer]);
 }
 
-static void get_vaccinated() {
+void infection_get_vaccinated() {
   vaccination_exit();
   ctx->patient->state = VACCINATED;
   ctx->patient->remaining_time = LIFE_TIME;
   preferences_put_ushort(STATE_MEM, ctx->patient->state);
   preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
-  genera_screen_display_card_information("Curado", "Ayuda a los demas");
+  genera_screen_display_card_information("Curado", "Ayuda a otros");
   vTaskDelay(pdMS_TO_TICKS(2500));
   infection_scenes_vaccines_builder_help();
 }
@@ -103,13 +104,13 @@ static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
   // print_vaccine(vaccine);
   if (memcmp(&vaccine, &cure_1, sizeof(vaccine_t)) == 0 &&
       ctx->patient->virus == VIRUS_1) {
-    get_vaccinated();
+    infection_get_vaccinated();
   } else if (memcmp(&vaccine, &cure_2, sizeof(vaccine_t)) == 0 &&
              ctx->patient->virus == VIRUS_2) {
-    get_vaccinated();
+    infection_get_vaccinated();
   } else if (memcmp(&vaccine, &cure_3, sizeof(vaccine_t)) == 0 &&
              ctx->patient->virus == VIRUS_3) {
-    get_vaccinated();
+    infection_get_vaccinated();
   } else {
     vaccination_exit();
     genera_screen_display_card_information("Sin efecto", "");
@@ -236,7 +237,7 @@ void infection_begin() {
   badge_connect_set_bsides_badge();
   load_patient_state();
   badge_pairing_begin();
-  // get_infected();
+  // infection_get_infected();
 }
 
 static void infection_show_screen(infection_event_t event, void* ctx) {

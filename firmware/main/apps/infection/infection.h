@@ -44,7 +44,7 @@ void infection_begin();
 void infection_scenes_begin();
 void infection_display_status();
 
-void get_infected();
+void infection_get_infected();
 
 void infection_vaccine_builder_mRNA();
 void infection_vaccine_builder_viral_code();
@@ -56,3 +56,5 @@ void send_vaccine_req_cmd();
 void infection_set_inmunity_time();
 void infection_set_patient_state(patient_state_t state);
 infection_ctx_t* infection_get_context();
+void infection_get_vaccinated();
+uint8_t get_random_uint8();

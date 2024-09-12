@@ -1,5 +1,6 @@
 #include "infection_scenes.h"
 
+#include "engine.h"
 #include "general_screens.h"
 #include "general_submenu.h"
 #include "infection.h"
@@ -191,6 +192,7 @@ static void vaccines_receiver_menu_selection_handler(uint8_t selection) {
       vaccination_begin();
       break;
     case DICE_OPTION:
+      engine_infection_vaccine_dice();
       break;
     case RECEIVER_HELP_OPTION:
       infection_scenes_vaccines_receiver_help();

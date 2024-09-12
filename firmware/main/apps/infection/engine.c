@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "bitmaps_general.h"
 #include "esp_random.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -6,7 +7,8 @@
 #include "menus_module.h"
 #include "screen_saver.h"
 
-#define ITEMOFFSET 1
+#define ITEMOFFSET    1
+#define SEQUENCE_SIZE 5
 
 static uint8_t infection_probability = 10;  // 10%
 static uint16_t infection_time = 30;
@@ -14,12 +16,11 @@ static bool combination_infect = false;
 
 static void engine_infection_vaccine_init();
 static void engine_handler_keyboard(uint8_t button_name, uint8_t button_event);
+static void show_arrow(uint8_t idx, bool check);
 
-static uint16_t current_item = 0;
-static uint16_t keyboard_combination[8] = {
-    BUTTON_UP,   BUTTON_UP,    BUTTON_DOWN, BUTTON_DOWN,
-    BUTTON_LEFT, BUTTON_RIGHT, BUTTON_LEFT, BUTTON_RIGHT};
-static uint16_t keyboard_combination_user[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static uint8_t current_item = 0;
+static uint8_t keyboard_combination[SEQUENCE_SIZE];
+static uint16_t keyboard_combination_user[SEQUENCE_SIZE];
 static uint8_t keyboard_combination_index = 0;
 static enum {
   VACCIN_MENU_HELP,
@@ -74,7 +75,7 @@ static void engine_infection_vaccine_start_timer() {
     oled_screen_display_text(infection_time_str, 0, 0, OLED_DISPLAY_NORMAL);
     if (infection_time == 0) {
       engine_infection_vaccine_stop_timer();
-      get_infected();
+      infection_get_infected();
     }
   }
 
@@ -93,34 +94,47 @@ static void engine_infection_vaccine_decipher() {
   genera_screen_display_card_information("Decifra clave", "");
 }
 
-static void engine_infection_vaccine_dice() {
+void engine_infection_vaccine_dice() {
   genera_screen_display_card_information("Lanzando dados", "");
-
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
   // Simulate dice roll with a 20 sided dice
   uint8_t dice_roll = (esp_random() % 20) + 1;
   // Recalculate infection probability
-  infection_probability = (dice_roll * 5) % 100;
-  char dice_roll_str[3];
-  sprintf(dice_roll_str, "%d", infection_probability);
-  if (infection_probability < 9) {
-    genera_screen_display_card_information("Infectado", dice_roll_str);
+  // infection_probability = (dice_roll * 5) % 100;
+  char dice_roll_str[20];
+  // sprintf(dice_roll_str, "%d", infection_probability);
+  sprintf(dice_roll_str, "%d", dice_roll);
+  if (dice_roll < 20) {
+    genera_screen_display_card_information("Mala suerte", dice_roll_str);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    sprintf(dice_roll_str, "%d segundos", dice_roll);
+    genera_screen_display_card_information("Tiempo perdido", dice_roll_str);
+    infection_ctx_t* ctx = infection_get_context();
+    uint8_t* time = &ctx->patient->remaining_time;
+    ctx->patient->remaining_time -= dice_roll;
+    if (ctx->patient->remaining_time > LIFE_TIME) {
+      ctx->patient->remaining_time = 0;
+    }
     vTaskDelay(2000 / portTICK_PERIOD_MS);
-    get_infected();
+    infection_scenes_vaccines_receiver_menu();
   } else {
     genera_screen_display_card_information("Salvado", dice_roll_str);
     vTaskDelay(2000 / portTICK_PERIOD_MS);
-    module_reset_menu();
+    infection_get_vaccinated();
+    // module_reset_menu();
   }
 }
 
 static void engine_infection_keyboard_combination_fail() {
-  genera_screen_display_notify_information("Error",
-                                           "La combinacion es incorrecta");
+  genera_screen_display_card_information("Error", "Combo incorrecto");
+  vTaskDelay(pdMS_TO_TICKS(2000));
 }
 
 static void engine_infection_keyboard_combination_done() {
-  genera_screen_display_notify_information("Excelente",
-                                           "La combinacion es correcta");
+  genera_screen_display_card_information("Excelente", "Combo correcto");
+  vTaskDelay(pdMS_TO_TICKS(2000));
+  genera_screen_display_card_information("Pero...", "Mantente alerta");
+  vTaskDelay(pdMS_TO_TICKS(2000));
 }
 
 static void engine_handler_keyboard_combination(uint8_t button_name,
@@ -128,30 +142,20 @@ static void engine_handler_keyboard_combination(uint8_t button_name,
   if (button_event != BUTTON_PRESS_DOWN) {
     return;
   }
-
-  switch (button_name) {
-    case BUTTON_UP:
-      keyboard_combination_user[keyboard_combination_index] = BUTTON_UP;
-      break;
-    case BUTTON_DOWN:
-      keyboard_combination_user[keyboard_combination_index] = BUTTON_DOWN;
-      break;
-    case BUTTON_LEFT:
-      keyboard_combination_user[keyboard_combination_index] = BUTTON_LEFT;
-      break;
-    case BUTTON_RIGHT:
-      keyboard_combination_user[keyboard_combination_index] = BUTTON_RIGHT;
-      break;
-    default:
-      break;
+  if (keyboard_combination_index == 0) {
+    genera_screen_display_card_information("", "");
   }
+  keyboard_combination_user[keyboard_combination_index] = button_name;
+  show_arrow(keyboard_combination_index, true);
+
   keyboard_combination_index++;
-  if (keyboard_combination_index >= 8) {
+  if (keyboard_combination_index >= SEQUENCE_SIZE) {
     keyboard_combination_index = 0;
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < SEQUENCE_SIZE; i++) {
       if (keyboard_combination[i] != keyboard_combination_user[i]) {
         engine_infection_vaccine_stop_timer();
         engine_infection_keyboard_combination_fail();
+        infection_get_infected();
         return;
       }
     }
@@ -207,20 +211,45 @@ static void engine_handler_keyboard(uint8_t button_name, uint8_t button_event) {
   }
 }
 
+static void new_sequence() {
+  for (uint8_t i = 0; i < SEQUENCE_SIZE; i++) {
+    keyboard_combination[i] = get_random_uint8() % BUTTON_DOWN + 1;
+  }
+}
+
+static void show_arrow(uint8_t idx, bool check) {
+  bool correct = keyboard_combination[idx] != keyboard_combination_user[idx];
+  if (!check) {
+    correct = false;
+  }
+  oled_screen_display_bitmap(arrows_bitmap_arr[keyboard_combination[idx] - 1],
+                             idx * 16 + 8 * idx + 4, 12, 16, 16, correct);
+}
+
+static void show_sequence() {
+  new_sequence();
+  for (uint8_t i = 0; i < SEQUENCE_SIZE; i++) {
+    show_arrow(i, false);
+  }
+}
+
 void engine_infection_alert() {
   screen_saver_stop();
   menus_module_disable_input();
-  genera_screen_display_notify_information(
-      "Alerta", "En proceso de infeccion, por favor mantenga la calma");
-  vTaskDelay(2000 / portTICK_PERIOD_MS);
-  genera_screen_display_notify_information(
-      "Alerta", "Soluciona el reto para evitar la infeccion");
-  vTaskDelay(2000 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information("Alerta", "Virus detectado");
+  vTaskDelay(2500 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information("Porfavor", "conservar calma");
+  vTaskDelay(2500 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information("Memorice", "la secuencia");
+  vTaskDelay(2500 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information("", "");
+  show_sequence();
+  vTaskDelay(5000 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information("Intruducir", "Secuencia");
   combination_infect = true;
   menus_module_enable_input();
   xTaskCreate(engine_infection_vaccine_start_timer, "infection_vaccine_timer",
               4096, NULL, 10, NULL);
 
   menus_module_set_app_state(true, engine_handler_keyboard_combination);
-  oled_screen_clear();
 }

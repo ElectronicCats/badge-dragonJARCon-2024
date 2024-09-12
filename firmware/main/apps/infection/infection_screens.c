@@ -55,7 +55,7 @@ static void show_infection_state(infection_ctx_t* ctx) {
   genera_screen_display_card_information(
       patient_states_str[ctx->patient->state], str);
   free(str);
-  frame = ++frame > FRAMES_NUM * 2 - 1 ? 0 : frame;
+  frame = ++frame > FRAMES_NUM * 2 - 3 ? 0 : frame;
 }
 
 void infection_screens_handler(infection_event_t event, void* context) {
