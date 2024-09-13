@@ -19,6 +19,10 @@
 #include "preferences.h"
 #include "vaccination.h"
 
+#define INFECTION_PROBABILITY       100
+#define INMUNITY_DAMAGE_PROBABILITY 3
+#define INMUNITY_MIN_VALUE          150
+
 static infection_ctx_t* ctx = NULL;
 
 static void infection_task();
@@ -61,12 +65,14 @@ void infection_get_infected() {
 
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   if (ctx->patient->inmunity > 0) {
-    ctx->patient->inmunity--;
-    // printf("INMUNITY: %d\n", ctx->patient->inmunity);
+    if (!(get_random_uint8() % INMUNITY_DAMAGE_PROBABILITY)) {
+      ctx->patient->inmunity--;
+    }
+    printf("INMUNITY: %d\n", ctx->patient->inmunity);
     return;
   }
   if (ctx->patient->state == HEALTY) {
-    if (get_random_uint8() % 100 == 0) {
+    if (!(get_random_uint8() % INFECTION_PROBABILITY)) {
       ctx->patient->state = INFECTED;
       ctx->patient->virus = get_random_virus();
       save_patient_state();
@@ -244,7 +250,8 @@ patient_state_t infection_get_patient_state() {
 }
 
 void infection_set_inmunity_time() {
-  ctx->patient->inmunity = MAX(get_random_uint8(), 100);
+  uint8_t inmunity = get_random_uint8();
+  ctx->patient->inmunity = MAX(inmunity, INMUNITY_MIN_VALUE);
 }
 
 void infection_set_patient_state(patient_state_t state) {

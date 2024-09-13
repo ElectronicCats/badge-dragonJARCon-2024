@@ -15,7 +15,7 @@ static uint8_t comp = 0;
 static void update_component() {
   oled_screen_clear_buffer();
   oled_screen_display_text_center(vaccine_comp_str[comp], 0,
-                                  OLED_DISPLAY_NORMAL);
+                                  OLED_DISPLAY_INVERT);
   uint8_t x = 64 + strlen(vaccine_comp_str[comp]) * 8 / 2;
   oled_screen_display_bitmap(simple_right_arrow_bmp, x, 0, 8, 8,
                              OLED_DISPLAY_NORMAL);
