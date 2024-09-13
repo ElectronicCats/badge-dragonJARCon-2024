@@ -46,10 +46,6 @@ void infection_display_status();
 
 void infection_get_infected();
 
-void infection_vaccine_builder_mRNA();
-void infection_vaccine_builder_viral_code();
-void infection_vaccine_builder_Lipid_layer();
-
 patient_state_t infection_get_patient_state();
 
 void send_vaccine_req_cmd();

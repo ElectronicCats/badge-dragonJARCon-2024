@@ -95,8 +95,8 @@ static void engine_infection_vaccine_decipher() {
 }
 
 void engine_infection_vaccine_dice() {
-  genera_screen_display_card_information("Lanzando dados", "");
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information("Lanzando dados", "Objetivo: 20");
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
   // Simulate dice roll with a 20 sided dice
   uint8_t dice_roll = (esp_random() % 20) + 1;
   // Recalculate infection probability
@@ -133,7 +133,7 @@ static void engine_infection_keyboard_combination_fail() {
 static void engine_infection_keyboard_combination_done() {
   genera_screen_display_card_information("Excelente", "Combo correcto");
   vTaskDelay(pdMS_TO_TICKS(2000));
-  genera_screen_display_card_information("Pero...", "Mantente alerta");
+  genera_screen_display_card_information("...", "Mantente alerta");
   vTaskDelay(pdMS_TO_TICKS(2000));
 }
 

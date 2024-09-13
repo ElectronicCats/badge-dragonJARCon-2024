@@ -7,6 +7,7 @@
 #include "infection_screens.h"
 #include "menus_module.h"
 #include "vaccination.h"
+#include "vaccine_builder.h"
 
 static uint8_t current_scene = 0;
 
@@ -90,26 +91,17 @@ void infection_scenes_help() {
 
 ////////////////////////////    Vacunas Menu   ////////////////////////////
 typedef enum {
-  mRNA_OPTION,
-  VIRAL_CODE_OPTION,
-  LIPID_LAYER_OPTION,
+  CREATE_VACCINE_OPTION,
   ADMINISTER_VACCINE_OPTION,
   VACCINES_BUILD_HELP_OPTION
 } infection_vaccines_menu_options;
-const char* vaccines_builder_menu_items[] = {
-    VACCINE_COMP_STR_1, VACCINE_COMP_STR_2, VACCINE_COMP_STR_3,
-    "Aplicar Vacuna", "Ayuda"};
+const char* vaccines_builder_menu_items[] = {"Crear Vacuna", "Aplicar Vacuna",
+                                             "Ayuda"};
 
 static void vaccines_builder_menu_selection_handler(uint8_t selection) {
   switch (selection) {
-    case mRNA_OPTION:
-      infection_vaccine_builder_mRNA();
-      break;
-    case VIRAL_CODE_OPTION:
-      infection_vaccine_builder_viral_code();
-      break;
-    case LIPID_LAYER_OPTION:
-      infection_vaccine_builder_Lipid_layer();
+    case CREATE_VACCINE_OPTION:
+      vaccine_builder_begin();
       break;
     case ADMINISTER_VACCINE_OPTION:
       vaccination_begin();

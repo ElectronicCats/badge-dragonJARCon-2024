@@ -18,7 +18,6 @@
 #include "nvs_flash.h"
 #include "preferences.h"
 #include "vaccination.h"
-#include "vaccine_builder/vaccine_builder.h"
 
 static infection_ctx_t* ctx = NULL;
 
@@ -69,6 +68,7 @@ static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   if (ctx->patient->state == HEALTY) {
     if (get_random_uint8() % 5 == 0) {
       ctx->patient->state = INFECTED;
+      ctx->patient->virus = get_random_virus();
       save_patient_state();
       vaccination_exit();
       engine_infection_alert();
@@ -213,14 +213,6 @@ static void load_patient_state() {
   if (ctx->patient->state >= INFECTED) {
     xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
   }
-
-  if (ctx->patient->state >= INFECTED) {
-    menus_module_hide_menu(MENU_INFECTION_VACCINES);
-    menus_module_reveal_menu(MENU_INFECTION_VACCINES_GET);
-  } else {
-    menus_module_reveal_menu(MENU_INFECTION_VACCINES);
-    menus_module_hide_menu(MENU_INFECTION_VACCINES_GET);
-  }
 }
 
 void infection_exit() {
@@ -242,16 +234,6 @@ void infection_begin() {
 
 static void infection_show_screen(infection_event_t event, void* ctx) {
   infection_screens_handler(event, ctx);
-}
-
-void infection_vaccine_builder_mRNA() {
-  vaccine_builder_begin(mRNA_COMP, &ctx->vaccine->arn);
-}
-void infection_vaccine_builder_viral_code() {
-  vaccine_builder_begin(VIRAL_CODE_COMP, &ctx->vaccine->viral_code);
-}
-void infection_vaccine_builder_Lipid_layer() {
-  vaccine_builder_begin(LIPID_LAYER_COMP, &ctx->vaccine->lipid_layer);
 }
 
 void infection_scenes_begin() {
