@@ -62,11 +62,11 @@ void infection_get_infected() {
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
   if (ctx->patient->inmunity > 0) {
     ctx->patient->inmunity--;
-    printf("INMUNITY: %d\n", ctx->patient->inmunity);
+    // printf("INMUNITY: %d\n", ctx->patient->inmunity);
     return;
   }
   if (ctx->patient->state == HEALTY) {
-    if (get_random_uint8() % 5 == 0) {
+    if (get_random_uint8() % 100 == 0) {
       ctx->patient->state = INFECTED;
       ctx->patient->virus = get_random_virus();
       save_patient_state();
@@ -76,7 +76,6 @@ static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
     // infection_get_infected();
   }
 }
-
 static void print_vaccine(vaccine_t vaccine) {
   printf("Vaccine: \n");
   printf("\t- ARN: %s\n", arn_str[vaccine.arn]);

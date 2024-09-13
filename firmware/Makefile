@@ -33,3 +33,5 @@ clean:
 all: flash monitor
 
 .PHONY: test_port test_minino_path setup compile flash monitor clean all
+
+ff:	format all
