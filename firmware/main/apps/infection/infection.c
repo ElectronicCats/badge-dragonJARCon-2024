@@ -20,8 +20,9 @@
 #include "vaccination.h"
 
 #define INFECTION_PROBABILITY       100
-#define INMUNITY_DAMAGE_PROBABILITY 3
-#define INMUNITY_MIN_VALUE          150
+#define INMUNITY_DAMAGE_PROBABILITY 2
+#define INMUNITY_MIN_VALUE          100
+#define TRANSMISSION_PROBABILITY    3
 
 static infection_ctx_t* ctx = NULL;
 
@@ -187,7 +188,9 @@ static void infection_task() {
     vTaskDelay(pdMS_TO_TICKS(1000));
     infection_display_status();
     save_patient_state();
-    send_virus_cmd();
+    if (!(get_random_uint8() % TRANSMISSION_PROBABILITY)) {
+      send_virus_cmd();
+    }
     if (ctx->patient->remaining_time > 0) {
       ctx->patient->remaining_time--;
     }
