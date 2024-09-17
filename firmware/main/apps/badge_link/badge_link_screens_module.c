@@ -69,8 +69,9 @@ void badge_link_screens_module_display_status(
       break;
     case BADGE_LINK_UNLOCK_FEATURE:
       oled_screen_clear();
-      oled_screen_display_text("Funcion de WiFi", 0, 0, OLED_DISPLAY_NORMAL);
-      oled_screen_display_text_center("desbloqueada!", 1, OLED_DISPLAY_NORMAL);
+      oled_screen_display_text_center("Excelente!", 0, OLED_DISPLAY_NORMAL);
+      oled_screen_display_text_center("Has encontrado", 1, OLED_DISPLAY_NORMAL);
+      oled_screen_display_text_center("un nuevo badge", 2, OLED_DISPLAY_NORMAL);
       oled_screen_display_text_center("Ok", 3, OLED_DISPLAY_INVERT);
       break;
     default:
