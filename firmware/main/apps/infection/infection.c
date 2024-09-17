@@ -30,6 +30,7 @@ static void infection_task();
 static void infection_show_screen(infection_event_t event, void* ctx);
 static void save_patient_state();
 void send_vaccine_req_cmd();
+static void send_vaccine_res_cmd();
 
 static int get_random_int() {
   uint32_t entropy = esp_random();
@@ -69,8 +70,12 @@ static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
     if (!(get_random_uint8() % INMUNITY_DAMAGE_PROBABILITY)) {
       ctx->patient->inmunity--;
     }
-    printf("INMUNITY: %d\n", ctx->patient->inmunity);
+    // printf("INMUNITY: %d\n", ctx->patient->inmunity);
     return;
+  }
+  if (!ctx->patient->init) {
+    ctx->patient->init = true;
+    save_patient_state();
   }
   if (ctx->patient->state == HEALTY) {
     if (!(get_random_uint8() % INFECTION_PROBABILITY)) {
@@ -106,16 +111,20 @@ static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
     return;
   }
   vaccine_req_cmd_t cmd = *((vaccine_req_cmd_t*) msg->data);
+  uint8_t* addr = msg->src_addr;
   vaccine_t vaccine = cmd.vaccine;
   // print_vaccine(vaccine);
   if (memcmp(&vaccine, &cure_1, sizeof(vaccine_t)) == 0 &&
       ctx->patient->virus == VIRUS_1) {
+    send_vaccine_res_cmd(addr);
     infection_get_vaccinated();
   } else if (memcmp(&vaccine, &cure_2, sizeof(vaccine_t)) == 0 &&
              ctx->patient->virus == VIRUS_2) {
+    send_vaccine_res_cmd(addr);
     infection_get_vaccinated();
   } else if (memcmp(&vaccine, &cure_3, sizeof(vaccine_t)) == 0 &&
              ctx->patient->virus == VIRUS_3) {
+    send_vaccine_res_cmd(addr);
     infection_get_vaccinated();
   } else {
     vaccination_exit();
@@ -123,6 +132,15 @@ static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
     vTaskDelay(pdMS_TO_TICKS(2500));
     infection_scenes_vaccines_receiver_menu();
   }
+}
+
+static void vaccine_res_cmd_handler(badge_connect_recv_msg_t* msg) {
+  if (ctx->patient->state >= INFECTED) {
+    return;
+  }
+  // printf("%s: %d\n", __func__, __LINE__);
+  ctx->patient->friends_saved_count++;
+  save_patient_state();
 }
 
 static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
@@ -134,6 +152,10 @@ static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
       break;
     case VACCINE_REQ_CMD:
       vaccine_req_cmd_handler(msg);
+      break;
+    case VACCINE_RES_CMD:
+      vaccine_res_cmd_handler(msg);
+      break;
     default:
       ping_handler(msg);
       break;
@@ -172,6 +194,7 @@ void send_vaccine_req_cmd() {
   if (ctx->patient->state >= INFECTED) {
     return;
   }
+  // printf("%s: %d\n", __func__, __LINE__);
   vaccine_req_cmd_t vaccine_cmd;
   vaccine_cmd.cmd = VACCINE_REQ_CMD;
   vaccine_cmd.vaccine = *ctx->vaccine;
@@ -181,6 +204,13 @@ void send_vaccine_req_cmd() {
   genera_screen_display_notify_information("Vacuna enviada", "");
   vTaskDelay(pdMS_TO_TICKS(2000));
   infection_scenes_vaccines_builder_menu();
+}
+
+static void send_vaccine_res_cmd(uint8_t* addr) {
+  // printf("%s: %d\n", __func__, __LINE__);
+  vaccine_res_cmd_t vaccine_cmd;
+  vaccine_cmd.cmd = VACCINE_RES_CMD;
+  badge_connect_send(addr, &vaccine_cmd, sizeof(vaccine_res_cmd_t));
 }
 
 static void infection_task() {
@@ -203,6 +233,7 @@ static void save_patient_state() {
   preferences_put_ushort(VIRUS_MEM, ctx->patient->virus);
   preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
   preferences_put_ushort(FRIENDS_SAVED_MEM, ctx->patient->friends_saved_count);
+  preferences_put_bool(INIT_MEM, ctx->patient->init);
 }
 
 static void load_patient_state() {
@@ -210,6 +241,7 @@ static void load_patient_state() {
   ctx->patient = calloc(1, sizeof(patient_t));
   ctx->vaccine = calloc(1, sizeof(vaccine_t));
 
+  ctx->patient->init = preferences_get_bool(INIT_MEM, false);
   ctx->patient->state = preferences_get_ushort(STATE_MEM, 0);
   ctx->patient->virus = preferences_get_ushort(VIRUS_MEM, 0);
   ctx->patient->remaining_time =
@@ -245,6 +277,12 @@ static void infection_show_screen(infection_event_t event, void* ctx) {
 }
 
 void infection_scenes_begin() {
+  if (!ctx->patient->init) {
+    genera_screen_display_card_information("Calma, todo", "a su tiempo");
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    menus_module_exit_app();
+    return;
+  }
   infection_scenes_main_menu();
 }
 

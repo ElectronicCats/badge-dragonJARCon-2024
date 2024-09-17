@@ -80,3 +80,4 @@ const vaccine_t cure_2 = {.arn = GENESCRIPT_RX7,
 const vaccine_t cure_3 = {.arn = SYNTHORNA_ALPHA,
                           .viral_code = VIROGEN_SARS_COV2,
                           .lipid_layer = LIPIDCORE_ALPHA};
+const vaccine_t* cures[] = {&cure_1, &cure_2, &cure_3};

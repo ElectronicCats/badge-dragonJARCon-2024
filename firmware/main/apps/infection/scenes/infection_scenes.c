@@ -93,10 +93,11 @@ void infection_scenes_help() {
 typedef enum {
   CREATE_VACCINE_OPTION,
   ADMINISTER_VACCINE_OPTION,
+  DICE_ROLL_OPTION,
   VACCINES_BUILD_HELP_OPTION
 } infection_vaccines_menu_options;
 const char* vaccines_builder_menu_items[] = {"Crear Vacuna", "Aplicar Vacuna",
-                                             "Ayuda"};
+                                             "Tirar Dados", "Ayuda"};
 
 static void vaccines_builder_menu_selection_handler(uint8_t selection) {
   switch (selection) {
@@ -105,6 +106,9 @@ static void vaccines_builder_menu_selection_handler(uint8_t selection) {
       break;
     case ADMINISTER_VACCINE_OPTION:
       vaccination_begin();
+      break;
+    case DICE_ROLL_OPTION:
+      engine_infection_vaccine_dice();
       break;
     case VACCINES_BUILD_HELP_OPTION:
       infection_scenes_vaccines_builder_help();

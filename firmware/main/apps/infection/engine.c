@@ -6,6 +6,7 @@
 #include "infection_scenes.h"
 #include "menus_module.h"
 #include "screen_saver.h"
+#include "virus.h"
 
 #define ITEMOFFSET    1
 #define SEQUENCE_SIZE 5
@@ -94,23 +95,15 @@ static void engine_infection_vaccine_decipher() {
   genera_screen_display_card_information("Decifra clave", "");
 }
 
-void engine_infection_vaccine_dice() {
-  genera_screen_display_card_information("Lanzando dados", "Objetivo: 20");
-  vTaskDelay(1500 / portTICK_PERIOD_MS);
-  // Simulate dice roll with a 20 sided dice
-  uint8_t dice_roll = (esp_random() % 20) + 1;
-  // Recalculate infection probability
-  // infection_probability = (dice_roll * 5) % 100;
+static void infected_dice_result(infection_ctx_t* ctx, uint8_t dice_roll) {
   char dice_roll_str[20];
-  // sprintf(dice_roll_str, "%d", infection_probability);
   sprintf(dice_roll_str, "%d", dice_roll);
   if (dice_roll < 20) {
-    genera_screen_display_card_information("Mala suerte", dice_roll_str);
+    sprintf(dice_roll_str, "%d", dice_roll);
+    genera_screen_display_card_information(dice_roll_str, "Mala suerte");
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     sprintf(dice_roll_str, "%d segundos", dice_roll);
     genera_screen_display_card_information("Tiempo perdido", dice_roll_str);
-    infection_ctx_t* ctx = infection_get_context();
-    uint8_t* time = &ctx->patient->remaining_time;
     ctx->patient->remaining_time -= dice_roll;
     if (ctx->patient->remaining_time > LIFE_TIME) {
       ctx->patient->remaining_time = 0;
@@ -118,10 +111,63 @@ void engine_infection_vaccine_dice() {
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     infection_scenes_vaccines_receiver_menu();
   } else {
-    genera_screen_display_card_information("Salvado", dice_roll_str);
+    genera_screen_display_card_information(dice_roll_str, "Salvado");
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     infection_get_vaccinated();
-    // module_reset_menu();
+  }
+}
+
+static void get_random_vaccine(infection_ctx_t* ctx, uint8_t dice_roll) {
+  char dice_roll_str[20];
+  sprintf(dice_roll_str, "%d", dice_roll);
+  uint8_t vaccine_idx = get_random_uint8() % 3;
+  memcpy(ctx->vaccine, cures[vaccine_idx], sizeof(vaccine_t));
+  genera_screen_display_card_information(dice_roll_str, "Felicidades");
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
+  sprintf(dice_roll_str, "para %s", virus_str[vaccine_idx]);
+  genera_screen_display_card_information("Ganaste: vacuna", dice_roll_str);
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information("Atento", "");
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information(VACCINE_COMP_STR_1,
+                                         arn_str[ctx->vaccine->arn]);
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information(
+      VACCINE_COMP_STR_2, viral_code_str[ctx->vaccine->viral_code]);
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
+  genera_screen_display_card_information(
+      VACCINE_COMP_STR_3, lipid_layer_str[ctx->vaccine->lipid_layer]);
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
+}
+
+static void healty_dice_result(infection_ctx_t* ctx, uint8_t dice_roll) {
+  char dice_roll_str[20];
+  sprintf(dice_roll_str, "%d", dice_roll);
+  if (dice_roll < 10) {
+    genera_screen_display_card_information(dice_roll_str, "Mala suerte");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    genera_screen_display_card_information(dice_roll_str, "Infectado");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    infection_get_infected();
+  } else if (dice_roll < 20) {
+    genera_screen_display_card_information(dice_roll_str, "Sin efecto");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    infection_scenes_vaccines_builder_menu();
+  } else {
+    get_random_vaccine(ctx, dice_roll);
+    infection_scenes_vaccines_builder_menu();
+  }
+}
+
+void engine_infection_vaccine_dice() {
+  infection_ctx_t* ctx = infection_get_context();
+  genera_screen_display_card_information("Lanzando dados", "Objetivo: 20");
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
+  uint8_t dice_roll = (esp_random() % 20) + 1;
+  if (ctx->patient->state >= INFECTED) {
+    infected_dice_result(ctx, dice_roll);
+  } else {
+    healty_dice_result(ctx, dice_roll);
   }
 }
 

@@ -16,5 +16,4 @@ typedef struct {
 
 typedef struct {
   infection_cmds_t cmd;
-  bool result;
 } vaccine_res_cmd_t;

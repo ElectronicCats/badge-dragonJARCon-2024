@@ -13,6 +13,7 @@
 #define LIFETIME_MEM      "lifetime"
 #define STATE_MEM         "pat_state"
 #define FRIENDS_SAVED_MEM "saved_friends"
+#define INIT_MEM          "init"
 
 typedef enum {
   HEALTY,
@@ -30,6 +31,7 @@ typedef struct {
   uint16_t remaining_time;
   uint16_t friends_saved_count;
   uint8_t inmunity;
+  bool init;
 } patient_t;
 
 typedef struct {
@@ -37,7 +39,7 @@ typedef struct {
   vaccine_t* vaccine;
 } infection_ctx_t;
 
-char* patient_states_str[] = {"Sano",      "",        "Vacunado",
+char* patient_states_str[] = {"Saludable", "",        "Vacunado",
                               "Infectado", "Critico", "Terminal"};
 
 void infection_begin();

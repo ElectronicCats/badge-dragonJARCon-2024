@@ -11,7 +11,7 @@ volatile bool waiting_task;
 void badge_pairing_reset();
 
 static void on_badge_connect(uint8_t* src_addr) {
-  printf("on_badge_connect\n");
+  // printf("on_badge_connect\n");
   ctx->state = true;
   ctx->ping_response = true;
   ctx->ping_retries = 0;
@@ -22,7 +22,7 @@ static void on_badge_connect(uint8_t* src_addr) {
 }
 
 static void on_badge_disconnect() {
-  printf("on_badge_disconnect\n");
+  // printf("on_badge_disconnect\n");
   badge_pairing_reset();
   if (ctx->on_disconnect_cb) {
     ctx->on_disconnect_cb();
@@ -126,7 +126,7 @@ uint8_t* badge_pairing_get_friend_addr() {
 }
 
 void badge_pairing_reset() {
-  printf("badge_pairing_reset\n");
+  // printf("badge_pairing_reset\n");
   memset(&ctx->friend_addr, 0, 6);
   ctx->state = false;
   ctx->ping_retries = 0;

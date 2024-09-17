@@ -25,15 +25,8 @@ static void show_corner_timer(infection_ctx_t* ctx) {
   return;
 }
 
-static void show_infection_state(infection_ctx_t* ctx) {
-  if (infection_scenes_get_scene() < INFECTION_STATE_SCENE) {
-    show_corner_timer(ctx);
-    return;
-  }
+static void show_infected_state(infection_ctx_t* ctx) {
   static uint8_t frame = 0;
-  if (ctx->patient->state < INFECTED) {
-    frame = 0;
-  }
   oled_screen_clear_buffer();
   char* str = (char*) malloc(100);
   switch (frame / 2) {
@@ -56,6 +49,30 @@ static void show_infection_state(infection_ctx_t* ctx) {
       patient_states_str[ctx->patient->state], str);
   free(str);
   frame = ++frame > FRAMES_NUM * 2 - 3 ? 0 : frame;
+}
+
+static void show_healty_state(infection_ctx_t* ctx) {
+  static uint8_t frame = 0;
+  oled_screen_clear_buffer();
+  char* str = (char*) malloc(100);
+  genera_screen_display_card_information("", "");
+  oled_screen_display_text_center(patient_states_str[ctx->patient->state], 1,
+                                  OLED_DISPLAY_NORMAL);
+  sprintf(str, "Salvados: %d", ctx->patient->friends_saved_count);
+  oled_screen_display_text_center(str, 2, OLED_DISPLAY_NORMAL);
+  free(str);
+}
+
+static void show_infection_state(infection_ctx_t* ctx) {
+  if (infection_scenes_get_scene() < INFECTION_STATE_SCENE) {
+    show_corner_timer(ctx);
+    return;
+  }
+  if (ctx->patient->state < INFECTED) {
+    show_healty_state(ctx);
+  } else {
+    show_infected_state(ctx);
+  }
 }
 
 void infection_screens_handler(infection_event_t event, void* context) {
