@@ -45,7 +45,7 @@ uint8_t get_random_uint8() {
   return get_random_int() % 256;
 }
 
-static bool get_random_bool() {
+bool get_random_bool() {
   return get_random_int() % 2;
 }
 

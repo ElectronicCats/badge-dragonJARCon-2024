@@ -97,6 +97,11 @@ static void engine_infection_vaccine_decipher() {
 
 static void infected_dice_result(infection_ctx_t* ctx, uint8_t dice_roll) {
   char dice_roll_str[20];
+  if (dice_roll == 20) {
+    if (!(get_random_uint8() % 3)) {
+      dice_roll = (esp_random() % 20) + 1;
+    }
+  }
   sprintf(dice_roll_str, "%d", dice_roll);
   if (dice_roll < 20) {
     sprintf(dice_roll_str, "%d", dice_roll);
@@ -112,6 +117,7 @@ static void infected_dice_result(infection_ctx_t* ctx, uint8_t dice_roll) {
     infection_scenes_vaccines_receiver_menu();
   } else {
     genera_screen_display_card_information(dice_roll_str, "Salvado");
+    ctx->patient->remaining_time += 3;
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     infection_get_vaccinated();
   }

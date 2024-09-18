@@ -56,3 +56,4 @@ void infection_set_patient_state(patient_state_t state);
 infection_ctx_t* infection_get_context();
 void infection_get_vaccinated();
 uint8_t get_random_uint8();
+bool get_random_bool();
