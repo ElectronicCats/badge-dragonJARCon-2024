@@ -296,7 +296,7 @@ void engine_infection_alert() {
   vTaskDelay(2500 / portTICK_PERIOD_MS);
   genera_screen_display_card_information("", "");
   show_sequence();
-  vTaskDelay(45000 / portTICK_PERIOD_MS);
+  vTaskDelay(4500 / portTICK_PERIOD_MS);
   genera_screen_display_card_information("Intruducir", "Secuencia");
   combination_infect = true;
   menus_module_enable_input();

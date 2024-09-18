@@ -19,7 +19,7 @@
 #include "preferences.h"
 #include "vaccination.h"
 
-#define INFECTION_PROBABILITY       100
+#define INFECTION_PROBABILITY       10
 #define INMUNITY_DAMAGE_PROBABILITY 2
 #define INMUNITY_MIN_VALUE          100
 #define TRANSMISSION_PROBABILITY    3
