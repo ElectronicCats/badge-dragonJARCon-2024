@@ -97,11 +97,6 @@ static void engine_infection_vaccine_decipher() {
 
 static void infected_dice_result(infection_ctx_t* ctx, uint8_t dice_roll) {
   char dice_roll_str[20];
-  if (dice_roll == 20) {
-    if (!(get_random_uint8() % 3)) {
-      dice_roll = (esp_random() % 20) + 1;
-    }
-  }
   sprintf(dice_roll_str, "%d", dice_roll);
   if (dice_roll < 20) {
     sprintf(dice_roll_str, "%d", dice_roll);
@@ -149,7 +144,7 @@ static void get_random_vaccine(infection_ctx_t* ctx, uint8_t dice_roll) {
 static void healty_dice_result(infection_ctx_t* ctx, uint8_t dice_roll) {
   char dice_roll_str[20];
   sprintf(dice_roll_str, "%d", dice_roll);
-  if (dice_roll < 10) {
+  if (dice_roll < 3) {
     genera_screen_display_card_information(dice_roll_str, "Mala suerte");
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     genera_screen_display_card_information(dice_roll_str, "Infectado");
@@ -170,6 +165,11 @@ void engine_infection_vaccine_dice() {
   genera_screen_display_card_information("Lanzando dados", "Objetivo: 20");
   vTaskDelay(1500 / portTICK_PERIOD_MS);
   uint8_t dice_roll = (esp_random() % 20) + 1;
+  if (dice_roll == 20) {
+    if ((get_random_uint8() % 3)) {
+      dice_roll = (esp_random() % 20) + 1;
+    }
+  }
   if (ctx->patient->state >= INFECTED) {
     infected_dice_result(ctx, dice_roll);
   } else {
