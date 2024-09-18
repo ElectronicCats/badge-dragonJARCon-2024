@@ -24,14 +24,18 @@ uint8_t infection_scenes_get_scene() {
 
 //////////////////////////////////// Main Menu ////////////////////////////////
 typedef enum {
+  MAIN_HELP_OPTION,
   STATE_OPTION,
-  VACCINES_OPTION,
-  MAIN_HELP_OPTION
+  VACCINES_OPTION
 } infection_main_menu_options;
-const char* infection_main_menu_items[] = {"Estado", "Vacunas", "Ayuda"};
+const char* infection_main_menu_items[] = {"Instrucciones", "Estado",
+                                           "Vacunas"};
 
 static void main_menu_selection_handler(uint8_t selection) {
   switch (selection) {
+    case MAIN_HELP_OPTION:
+      infection_scenes_help();
+      break;
     case STATE_OPTION:
       infection_scenes_state_menu();
       break;
@@ -41,9 +45,6 @@ static void main_menu_selection_handler(uint8_t selection) {
       } else {
         infection_scenes_vaccines_builder_menu();
       }
-      break;
-    case MAIN_HELP_OPTION:
-      infection_scenes_help();
       break;
     default:
       break;
@@ -91,16 +92,19 @@ void infection_scenes_help() {
 
 ////////////////////////////    Vacunas Menu   ////////////////////////////
 typedef enum {
+  VACCINES_BUILD_HELP_OPTION,
   CREATE_VACCINE_OPTION,
   ADMINISTER_VACCINE_OPTION,
-  DICE_ROLL_OPTION,
-  VACCINES_BUILD_HELP_OPTION
+  DICE_ROLL_OPTION
 } infection_vaccines_menu_options;
-const char* vaccines_builder_menu_items[] = {"Crear Vacuna", "Aplicar Vacuna",
-                                             "Tirar Dados", "Ayuda"};
+const char* vaccines_builder_menu_items[] = {"Instrucciones", "Crear Vacuna",
+                                             "Aplicar Vacuna", "Tirar Dados"};
 
 static void vaccines_builder_menu_selection_handler(uint8_t selection) {
   switch (selection) {
+    case VACCINES_BUILD_HELP_OPTION:
+      infection_scenes_vaccines_builder_help();
+      break;
     case CREATE_VACCINE_OPTION:
       vaccine_builder_begin();
       break;
@@ -109,9 +113,6 @@ static void vaccines_builder_menu_selection_handler(uint8_t selection) {
       break;
     case DICE_ROLL_OPTION:
       engine_infection_vaccine_dice();
-      break;
-    case VACCINES_BUILD_HELP_OPTION:
-      infection_scenes_vaccines_builder_help();
       break;
     default:
       break;
@@ -175,24 +176,23 @@ void infection_scenes_vaccines_builder_help() {
 
 ///////////////////////    Vaccines Receiver Menu   ///////////////////////////
 typedef enum {
-  RECEIVER_OPTION,
-  DICE_OPTION,
   RECEIVER_HELP_OPTION,
+  RECEIVER_OPTION,
+  DICE_OPTION
 } infection_receiver_menu_options;
-const char* infection_receiver_menu_items[] = {"Recibir Vacuna", "Tirar Dados",
-                                               "Ayuda"};
+const char* infection_receiver_menu_items[] = {"Instrucciones",
+                                               "Recibir Vacuna", "Tirar Dados"};
 
 static void vaccines_receiver_menu_selection_handler(uint8_t selection) {
   switch (selection) {
+    case RECEIVER_HELP_OPTION:
+      infection_scenes_vaccines_receiver_help();
+      break;
     case RECEIVER_OPTION:
       vaccination_begin();
       break;
     case DICE_OPTION:
       engine_infection_vaccine_dice();
-      break;
-    case RECEIVER_HELP_OPTION:
-      infection_scenes_vaccines_receiver_help();
-      break;
       break;
     default:
       break;
