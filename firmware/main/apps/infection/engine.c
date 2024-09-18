@@ -9,7 +9,7 @@
 #include "virus.h"
 
 #define ITEMOFFSET    1
-#define SEQUENCE_SIZE 5
+#define SEQUENCE_SIZE 6
 
 static uint8_t infection_probability = 10;  // 10%
 static uint16_t infection_time = 30;
@@ -269,7 +269,7 @@ static void show_arrow(uint8_t idx, bool check) {
     correct = false;
   }
   oled_screen_display_bitmap(arrows_bitmap_arr[keyboard_combination[idx] - 1],
-                             idx * 16 + 8 * idx + 4, 12, 16, 16, correct);
+                             (idx * 16) + (4 * idx) + 2, 12, 16, 16, correct);
 }
 
 static void show_sequence() {
@@ -290,12 +290,11 @@ void engine_infection_alert() {
   vTaskDelay(2500 / portTICK_PERIOD_MS);
   genera_screen_display_card_information("", "");
   show_sequence();
-  vTaskDelay(5000 / portTICK_PERIOD_MS);
+  vTaskDelay(45000 / portTICK_PERIOD_MS);
   genera_screen_display_card_information("Intruducir", "Secuencia");
   combination_infect = true;
   menus_module_enable_input();
   xTaskCreate(engine_infection_vaccine_start_timer, "infection_vaccine_timer",
               4096, NULL, 10, NULL);
-
   menus_module_set_app_state(true, engine_handler_keyboard_combination);
 }
