@@ -315,7 +315,7 @@ static const char* vaccines_receiver_help_txt[] = {"Estas infectado",
                                                    "Abre el menu",
                                                    "RECIBIR VACUNAS",
                                                    "y busca",
-                                                   "un badge"
+                                                   "un badge",
                                                    "saludable para",
                                                    "para que te",
                                                    "administre",
@@ -349,7 +349,7 @@ static const char* vaccines_receiver_help_txt[] = {"Estas infectado",
                                                    "queda"};
 
 static const general_menu_t vaccines_receiver_help_menu = {
-    .menu_count = 50,
+    .menu_count = 51,
     .menu_items = vaccines_receiver_help_txt,
     .menu_level = GENERAL_TREE_APP_SUBMENU};
 
