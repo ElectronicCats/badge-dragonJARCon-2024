@@ -16,7 +16,9 @@ static uint8_t* get_comp_ptr(uint8_t comp_idx);
 
 static void show_vaccine() {
   oled_screen_clear_buffer();
-  oled_screen_display_text_center("Resumen", 0, OLED_DISPLAY_INVERT);
+  oled_screen_display_bitmap(simple_right_arrow_bmp, 100, 0, 8, 8,
+                             OLED_DISPLAY_NORMAL);
+  oled_screen_display_text_center(" Resumen ", 0, OLED_DISPLAY_INVERT);
   for (uint8_t i = 0; i < COMPONENTS_NUM - 1; i++) {
     oled_screen_display_text(components_str[i][*get_comp_ptr(i)], 0, i + 1,
                              OLED_DISPLAY_NORMAL);
@@ -80,14 +82,14 @@ static void vaccine_builder_input_cb(uint8_t button_name,
       if (comp == COMPONENTS_NUM - 1) {
         return;
       }
-      (*comp_ptr) = (*comp_ptr)-- == 0 ? VARIANTS_NUM - 1 : (*comp_ptr);
+      (*comp_ptr) = ++(*comp_ptr) > VARIANTS_NUM - 1 ? 0 : (*comp_ptr);
       update_component();
       break;
     case BUTTON_DOWN:
       if (comp == COMPONENTS_NUM - 1) {
         return;
       }
-      (*comp_ptr) = ++(*comp_ptr) > VARIANTS_NUM - 1 ? 0 : (*comp_ptr);
+      (*comp_ptr) = (*comp_ptr)-- == 0 ? VARIANTS_NUM - 1 : (*comp_ptr);
       update_component();
       break;
     default:
