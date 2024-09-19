@@ -144,7 +144,7 @@ static void get_random_vaccine(infection_ctx_t* ctx, uint8_t dice_roll) {
 static void healty_dice_result(infection_ctx_t* ctx, uint8_t dice_roll) {
   char dice_roll_str[20];
   sprintf(dice_roll_str, "%d", dice_roll);
-  if (dice_roll < 3) {
+  if (dice_roll < 2) {
     genera_screen_display_card_information(dice_roll_str, "Mala suerte");
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     genera_screen_display_card_information(dice_roll_str, "Infectado");
