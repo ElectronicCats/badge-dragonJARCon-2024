@@ -8,7 +8,7 @@
 #include "flash_fs.h"
 #include "flash_fs_screens.h"
 #include "keyboard_module.h"
-#include "leds.h"
+#include "leds_d.h"
 #include "menus_module.h"
 #include "open_thread.h"
 #include "preferences.h"
@@ -46,4 +46,5 @@ void app_main() {
   infection_begin();
   // badge_link_module_begin();
   // cat_console_begin();
+  leds_on();
 }
