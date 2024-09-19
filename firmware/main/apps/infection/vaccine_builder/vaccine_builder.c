@@ -6,13 +6,29 @@
 #include "menus_module.h"
 #include "oled_screen.h"
 
-#define COMPONENTS_NUM 3
+#define COMPONENTS_NUM 4
 #define VARIANTS_NUM   4
 
 static uint8_t* comp_ptr;
 static uint8_t comp = 0;
 
+static uint8_t* get_comp_ptr(uint8_t comp_idx);
+
+static void show_vaccine() {
+  oled_screen_clear_buffer();
+  oled_screen_display_text_center("Resumen", 0, OLED_DISPLAY_INVERT);
+  for (uint8_t i = 0; i < COMPONENTS_NUM - 1; i++) {
+    oled_screen_display_text(components_str[i][*get_comp_ptr(i)], 0, i + 1,
+                             OLED_DISPLAY_NORMAL);
+  }
+  oled_screen_display_show();
+}
+
 static void update_component() {
+  if (comp == COMPONENTS_NUM - 1) {
+    show_vaccine();
+    return;
+  }
   oled_screen_clear_buffer();
   oled_screen_display_text_center(vaccine_comp_str[comp], 0,
                                   OLED_DISPLAY_INVERT);
@@ -28,9 +44,9 @@ static void update_component() {
   oled_screen_display_show();
 }
 
-static void get_comp_ptr() {
+static uint8_t* get_comp_ptr(uint8_t comp_idx) {
   infection_ctx_t* ctx = infection_get_context();
-  switch (comp) {
+  switch (comp_idx) {
     case mRNA_COMP:
       comp_ptr = &ctx->vaccine->arn;
       break;
@@ -43,6 +59,7 @@ static void get_comp_ptr() {
     default:
       break;
   }
+  return comp_ptr;
 }
 
 static void vaccine_builder_input_cb(uint8_t button_name,
@@ -56,14 +73,20 @@ static void vaccine_builder_input_cb(uint8_t button_name,
       break;
     case BUTTON_RIGHT:
       comp = ++comp > COMPONENTS_NUM - 1 ? 0 : comp;
-      get_comp_ptr();
+      get_comp_ptr(comp);
       update_component();
       break;
     case BUTTON_UP:
+      if (comp == COMPONENTS_NUM - 1) {
+        return;
+      }
       (*comp_ptr) = (*comp_ptr)-- == 0 ? VARIANTS_NUM - 1 : (*comp_ptr);
       update_component();
       break;
     case BUTTON_DOWN:
+      if (comp == COMPONENTS_NUM - 1) {
+        return;
+      }
       (*comp_ptr) = ++(*comp_ptr) > VARIANTS_NUM - 1 ? 0 : (*comp_ptr);
       update_component();
       break;
@@ -74,6 +97,6 @@ static void vaccine_builder_input_cb(uint8_t button_name,
 
 void vaccine_builder_begin() {
   menus_module_set_app_state(true, vaccine_builder_input_cb);
-  get_comp_ptr();
+  get_comp_ptr(comp);
   update_component();
 }
