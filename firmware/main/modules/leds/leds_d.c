@@ -1,135 +1,120 @@
-#include "leds.h"
+#include "leds_d.h"
 #include <string.h>
+#include "coroutine.h"
 #include "driver/ledc.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "ledc_controller_d.h"
 #include "preferences.h"
 
-#define LED_G_1           GPIO_NUM_4
-#define LED_G_2           GPIO_NUM_18
-#define LED_Y_1           GPIO_NUM_19
-#define LED_Y_2           GPIO_NUM_20
-#define LED_O_1           GPIO_NUM_21
-#define LED_O_2           GPIO_NUM_22
-#define LED_R_1           GPIO_NUM_23
-#define LED_R_2           GPIO_NUM_15
+#define LED_G_1 GPIO_NUM_4
+#define LED_G_2 GPIO_NUM_18
+#define LED_Y_1 GPIO_NUM_19
+#define LED_Y_2 GPIO_NUM_20
+#define LED_O_1 GPIO_NUM_21
+#define LED_O_2 GPIO_NUM_22
+#define LED_R_1 GPIO_NUM_23
+#define LED_R_2 GPIO_NUM_15
 
-#define LED_G_C  LEDC_CHANNEL_0
-#define LED_Y_C LEDC_CHANNEL_1
-#define LED_O_C LEDC_CHANNEL_2
-#define LED_R_C LEDC_CHANNEL_3
-#define LEDC_TIMER        LEDC_TIMER_0
+#define LED_G_C    LEDC_CHANNEL_0
+#define LED_Y_C    LEDC_CHANNEL_1
+#define LED_O_C    LEDC_CHANNEL_2
+#define LED_R_C    LEDC_CHANNEL_3
+#define LEDC_TIMER LEDC_TIMER_0
 
-static led_t *led_g_x, *led_g_y, *led_y_x, *led_y_y, *led_o_x, *led_o_y, *led_r_x, *led_r_y;
+static const uint8_t led_chs[] = {LED_R_C, LED_O_C, LED_Y_C, LED_G_C};
+
+static const uint8_t led_pins[] = {LED_R_1, LED_R_2, LED_O_1, LED_O_2,
+                                   LED_Y_1, LED_Y_2, LED_G_1, LED_G_2};
+
+static led_t *led_g_x, *led_g_y, *led_y_x, *led_y_y, *led_o_x, *led_o_y,
+    *led_r_x, *led_r_y;
+
+static led_t* led_ptrs[8];
 
 void leds_begin() {
-  led_g_x = (led_t*) malloc(sizeof(led_t));
-  led_g_y = (led_t*) malloc(sizeof(led_t));
-  led_y_x = (led_t*) malloc(sizeof(led_t));
-  led_y_y = (led_t*) malloc(sizeof(led_t));
-  led_o_x = (led_t*) malloc(sizeof(led_t));
-  led_o_y = (led_t*) malloc(sizeof(led_t));
-  led_r_x = (led_t*) malloc(sizeof(led_t));
-  led_r_y = (led_t*) malloc(sizeof(led_t));
+  for (uint8_t i = 0; i < LEDS_NUM; i++) {
+    led_ptrs[i] = malloc(sizeof(led_t));
+    *led_ptrs[i] = led_controller_led_new(led_pins[i], led_chs[i / 2]);
+    led_controller_led_init(led_ptrs[i]);
+  }
 
-  *led_g_x = led_controller_led_new(LED_G_1, LED_G_C);
-  *led_g_y = led_controller_led_new(LED_G_2, LED_G_C);
-  *led_y_x = led_controller_led_new(LED_Y_1, LED_Y_C);
-  *led_y_y = led_controller_led_new(LED_Y_2, LED_Y_C);
-  *led_o_x = led_controller_led_new(LED_O_1, LED_O_C);
-  *led_o_y = led_controller_led_new(LED_O_2, LED_O_C);
-  *led_r_x = led_controller_led_new(LED_R_1, LED_R_C);
-  *led_r_y = led_controller_led_new(LED_R_2, LED_R_C);
+  // led_g_x = (led_t*) malloc(sizeof(led_t));
+  // led_g_y = (led_t*) malloc(sizeof(led_t));
+  // led_y_x = (led_t*) malloc(sizeof(led_t));
+  // led_y_y = (led_t*) malloc(sizeof(led_t));
+  // led_o_x = (led_t*) malloc(sizeof(led_t));
+  // led_o_y = (led_t*) malloc(sizeof(led_t));
+  // led_r_x = (led_t*) malloc(sizeof(led_t));
+  // led_r_y = (led_t*) malloc(sizeof(led_t));
 
-  led_controller_led_init(led_g_x);
-  led_controller_led_init(led_g_y);
-  led_controller_led_init(led_y_x);
-  led_controller_led_init(led_y_y);
-  led_controller_led_init(led_o_x);
-  led_controller_led_init(led_o_y);
-  led_controller_led_init(led_r_x);
-  led_controller_led_init(led_r_y);
+  // *led_g_x = led_controller_led_new(LED_G_1, LED_G_C);
+  // *led_g_y = led_controller_led_new(LED_G_2, LED_G_C);
+  // *led_y_x = led_controller_led_new(LED_Y_1, LED_Y_C);
+  // *led_y_y = led_controller_led_new(LED_Y_2, LED_Y_C);
+  // *led_o_x = led_controller_led_new(LED_O_1, LED_O_C);
+  // *led_o_y = led_controller_led_new(LED_O_2, LED_O_C);
+  // *led_r_x = led_controller_led_new(LED_R_1, LED_R_C);
+  // *led_r_y = led_controller_led_new(LED_R_2, LED_R_C);
+
+  // led_controller_led_init(led_g_x);
+  // led_controller_led_init(led_g_y);
+  // led_controller_led_init(led_y_x);
+  // led_controller_led_init(led_y_y);
+  // led_controller_led_init(led_o_x);
+  // led_controller_led_init(led_o_y);
+  // led_controller_led_init(led_r_x);
+  // led_controller_led_init(led_r_y);
 }
 
 void leds_deinit() {
-  if(!led_g_x || !led_g_y || !led_y_x || !led_y_y || !led_o_x || !led_o_y || !led_r_x || !led_r_y){
-    return;
+  for (uint8_t i = 0; i < LEDS_NUM; i++) {
+    if (!led_ptrs[i]) {
+      return;
+    }
+    led_controller_led_deinit(led_ptrs[i]);
+    free(led_ptrs[i]);
+    led_ptrs[i] = NULL;
   }
-
-  led_controller_led_deinit(led_g_x);
-  led_controller_led_deinit(led_g_y);
-  led_controller_led_deinit(led_y_x);
-  led_controller_led_deinit(led_y_y);
-  led_controller_led_deinit(led_o_x);
-  led_controller_led_deinit(led_o_y);
-  led_controller_led_deinit(led_r_x);
-  led_controller_led_deinit(led_r_y);
-
-  free(led_g_x);
-  free(led_g_y);
-  free(led_y_x);
-  free(led_y_y);
-  free(led_o_x);
-  free(led_o_y);
-  free(led_r_x);
-  free(led_r_y);
-
-  led_g_x = NULL;
-  led_g_y = NULL;
-  led_y_x = NULL;
-  led_y_y = NULL;
-  led_o_x = NULL;
-  led_o_y = NULL;
-  led_r_x = NULL;
-  led_r_y = NULL;
 }
 
 void leds_on() {
-  led_controller_led_on(led_g_x);
-  led_controller_led_on(led_g_y);
-  led_controller_led_on(led_y_x);
-  led_controller_led_on(led_y_y);
-  led_controller_led_on(led_o_x);
-  led_controller_led_on(led_o_y);
-  led_controller_led_on(led_r_x);
-  led_controller_led_on(led_r_y);
+  for (uint8_t i = 0; i < LEDS_NUM; i++) {
+    led_controller_led_on(led_ptrs[i]);
+  }
 }
 
 void leds_off() {
-  led_controller_led_off(led_g_x);
-  led_controller_led_off(led_g_y);
-  led_controller_led_off(led_y_x);
-  led_controller_led_off(led_y_y);
-  led_controller_led_off(led_o_x);
-  led_controller_led_off(led_o_y);
-  led_controller_led_off(led_r_x);
-  led_controller_led_off(led_r_y);
+  for (uint8_t i = 0; i < LEDS_NUM; i++) {
+    led_controller_led_off(led_ptrs[i]);
+  }
 }
 
-void leds_on_g(){
+void leds_on_g() {
   leds_off();
-  led_controller_led_on(led_g_x);
-  led_controller_led_on(led_g_y);
+  led_controller_led_off(led_ptrs[LED_G_1]);
+  led_controller_led_off(led_ptrs[LED_G_2]);
 }
 
-void leds_on_y(){
+void leds_on_y() {
   leds_off();
-  led_controller_led_on(led_y_x);
-  led_controller_led_on(led_y_y);
+  led_controller_led_off(led_ptrs[LED_Y_1]);
+  led_controller_led_off(led_ptrs[LED_Y_2]);
 }
 
-void leds_on_o(){
+void leds_on_o() {
   leds_off();
-  led_controller_led_on(led_o_x);
-  led_controller_led_on(led_o_y);
+  led_controller_led_off(led_ptrs[LED_O_1]);
+  led_controller_led_off(led_ptrs[LED_O_2]);
 }
 
-void leds_on_r(){
+void leds_on_r() {
   leds_off();
-  led_controller_led_on(led_r_x);
-  led_controller_led_on(led_r_y);
+  led_controller_led_off(led_ptrs[LED_R_1]);
+  led_controller_led_off(led_ptrs[LED_R_2]);
 }
 
-void leds_notification(){
+static void leds_notification_coroutine() {
   leds_off();
   leds_on();
   vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -148,10 +133,14 @@ void leds_notification(){
   leds_off();
 }
 
-void leds_set_brightness(uint8_t led, uint8_t brightness) {
-  led_controller_set_duty(led_g_x, brightness);
+void leds_notification() {
+  start_coroutine(leds_notification_coroutine, NULL);
 }
 
-void led_stop(uint8_t led) {
-  led_controller_stop_any_effect(led_g_x);
+void leds_set_brightness(leds_enum led, uint8_t brightness) {
+  led_controller_set_duty(led_ptrs[led], brightness);
+}
+
+void led_stop(leds_enum led) {
+  led_controller_stop_any_effect(led_ptrs[led]);
 }
