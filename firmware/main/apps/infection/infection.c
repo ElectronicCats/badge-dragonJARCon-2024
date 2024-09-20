@@ -250,7 +250,7 @@ static void infection_task() {
     }
     if (ctx->patient->remaining_time > 0) {
       ctx->patient->remaining_time--;
-      if (ctx->patient->remaining_time < 300) {
+      if (ctx->patient->remaining_time < 600) {
         set_typography_value(true);
         ctx->patient->state = CRITICAL;
       }
