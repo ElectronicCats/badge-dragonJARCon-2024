@@ -5,6 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "ledc_controller_d.h"
+#include "leds_d.h"
 #include "preferences.h"
 
 #define LED_G_1 GPIO_NUM_4
@@ -26,10 +27,6 @@ static const uint8_t led_chs[] = {LED_R_C, LED_O_C, LED_Y_C, LED_G_C};
 
 static const uint8_t led_pins[] = {LED_R_1, LED_R_2, LED_O_1, LED_O_2,
                                    LED_Y_1, LED_Y_2, LED_G_1, LED_G_2};
-
-static led_t *led_g_x, *led_g_y, *led_y_x, *led_y_y, *led_o_x, *led_o_y,
-    *led_r_x, *led_r_y;
-
 static led_t* led_ptrs[8];
 
 void leds_begin() {
@@ -38,33 +35,6 @@ void leds_begin() {
     *led_ptrs[i] = led_controller_led_new(led_pins[i], led_chs[i / 2]);
     led_controller_led_init(led_ptrs[i]);
   }
-
-  // led_g_x = (led_t*) malloc(sizeof(led_t));
-  // led_g_y = (led_t*) malloc(sizeof(led_t));
-  // led_y_x = (led_t*) malloc(sizeof(led_t));
-  // led_y_y = (led_t*) malloc(sizeof(led_t));
-  // led_o_x = (led_t*) malloc(sizeof(led_t));
-  // led_o_y = (led_t*) malloc(sizeof(led_t));
-  // led_r_x = (led_t*) malloc(sizeof(led_t));
-  // led_r_y = (led_t*) malloc(sizeof(led_t));
-
-  // *led_g_x = led_controller_led_new(LED_G_1, LED_G_C);
-  // *led_g_y = led_controller_led_new(LED_G_2, LED_G_C);
-  // *led_y_x = led_controller_led_new(LED_Y_1, LED_Y_C);
-  // *led_y_y = led_controller_led_new(LED_Y_2, LED_Y_C);
-  // *led_o_x = led_controller_led_new(LED_O_1, LED_O_C);
-  // *led_o_y = led_controller_led_new(LED_O_2, LED_O_C);
-  // *led_r_x = led_controller_led_new(LED_R_1, LED_R_C);
-  // *led_r_y = led_controller_led_new(LED_R_2, LED_R_C);
-
-  // led_controller_led_init(led_g_x);
-  // led_controller_led_init(led_g_y);
-  // led_controller_led_init(led_y_x);
-  // led_controller_led_init(led_y_y);
-  // led_controller_led_init(led_o_x);
-  // led_controller_led_init(led_o_y);
-  // led_controller_led_init(led_r_x);
-  // led_controller_led_init(led_r_y);
 }
 
 void leds_deinit() {
@@ -131,6 +101,7 @@ static void leds_notification_coroutine() {
   leds_on();
   vTaskDelay(1000 / portTICK_PERIOD_MS);
   leds_off();
+  vTaskDelete(NULL);
 }
 
 void leds_notification() {
