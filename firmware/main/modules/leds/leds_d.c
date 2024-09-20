@@ -2,6 +2,7 @@
 #include <string.h>
 #include "driver/ledc.h"
 #include "ledc_controller_d.h"
+#include "preferences.h"
 
 #define LED_G_1           GPIO_NUM_4
 #define LED_G_2           GPIO_NUM_18
@@ -87,10 +88,10 @@ void leds_on() {
   led_controller_led_on(led_g_y);
   led_controller_led_on(led_y_x);
   led_controller_led_on(led_y_y);
-  // led_controller_led_on(led_o_x);
-  // led_controller_led_on(led_o_y);
-  // led_controller_led_on(led_r_x);
-  // led_controller_led_on(led_r_y);
+  led_controller_led_on(led_o_x);
+  led_controller_led_on(led_o_y);
+  led_controller_led_on(led_r_x);
+  led_controller_led_on(led_r_y);
 }
 
 void leds_off() {
@@ -98,10 +99,53 @@ void leds_off() {
   led_controller_led_off(led_g_y);
   led_controller_led_off(led_y_x);
   led_controller_led_off(led_y_y);
-  // led_controller_led_off(led_o_x);
-  // led_controller_led_off(led_o_y);
-  // led_controller_led_off(led_r_x);
-  // led_controller_led_off(led_r_y);
+  led_controller_led_off(led_o_x);
+  led_controller_led_off(led_o_y);
+  led_controller_led_off(led_r_x);
+  led_controller_led_off(led_r_y);
+}
+
+void leds_on_g(){
+  leds_off();
+  led_controller_led_on(led_g_x);
+  led_controller_led_on(led_g_y);
+}
+
+void leds_on_y(){
+  leds_off();
+  led_controller_led_on(led_y_x);
+  led_controller_led_on(led_y_y);
+}
+
+void leds_on_o(){
+  leds_off();
+  led_controller_led_on(led_o_x);
+  led_controller_led_on(led_o_y);
+}
+
+void leds_on_r(){
+  leds_off();
+  led_controller_led_on(led_r_x);
+  led_controller_led_on(led_r_y);
+}
+
+void leds_notification(){
+  leds_off();
+  leds_on();
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  leds_off();
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  leds_on();
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  leds_off();
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  leds_on();
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  leds_off();
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  leds_on();
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  leds_off();
 }
 
 void leds_set_brightness(uint8_t led, uint8_t brightness) {
