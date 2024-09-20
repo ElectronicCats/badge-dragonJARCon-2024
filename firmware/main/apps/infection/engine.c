@@ -211,10 +211,10 @@ static void engine_handler_keyboard_combination(uint8_t button_name,
         return;
       }
     }
-    engine_infection_vaccine_stop_timer();
-    engine_infection_keyboard_combination_done();
     infection_set_inmunity_time();
     infection_set_patient_state(HEALTY);
+    engine_infection_vaccine_stop_timer();
+    engine_infection_keyboard_combination_done();
     infection_scenes_main_menu();
     // general_register_menu(&vaccin_menu);
     // menus_module_set_app_state(true, engine_handler_keyboard);
