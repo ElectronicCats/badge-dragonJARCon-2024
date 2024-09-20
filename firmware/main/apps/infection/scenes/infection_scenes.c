@@ -96,10 +96,26 @@ static const char* infection_help_txt[] = {"El virus se",
                                            "- Fuerza bruta",
                                            "",
                                            "Seras capaz de",
-                                           "sobrevivir?"};
-
+                                           "sobrevivir?"
+                                           "",
+                                           "",
+                                           "",
+                                           "",
+                                           "",
+                                           "",
+                                           "Bnloq`\31tm`\31",
+                                           "B`srmheedq\31x\31sd",
+                                           "c`lnr\31dk\31bnchfn",
+                                           "cd\31k`\31u`btm`",
+                                           "",
+                                           "",
+                                           "",
+                                           "",
+                                           "",
+                                           "",
+                                           ""};
 static const general_menu_t infection_help_menu = {
-    .menu_count = 31,
+    .menu_count = 47,
     .menu_items = infection_help_txt,
     .menu_level = GENERAL_TREE_APP_SUBMENU};
 

@@ -13,16 +13,13 @@ typedef enum {
 } infection_state_frames_t;
 
 static void show_corner_timer(infection_ctx_t* ctx) {
-  char* str = (char*) malloc(20);
-  if (ctx->patient->remaining_time == 0) {
-    sprintf(str, "Infectado");
-  } else {
+  if (ctx->patient->remaining_time > 0) {
+    char* str = (char*) malloc(20);
     sprintf(str, "%02d:%02d", ctx->patient->remaining_time / 60,
             ctx->patient->remaining_time % 60);
+    oled_screen_display_text(str, 88, 0, OLED_DISPLAY_NORMAL);
+    free(str);
   }
-  oled_screen_display_text(str, 88, 0, OLED_DISPLAY_NORMAL);
-  free(str);
-  return;
 }
 
 static void show_infected_state(infection_ctx_t* ctx) {

@@ -7,13 +7,15 @@
 
 #define MAC_SIZE 6
 
-#define LIFE_TIME 900
+#define LIFE_TIME 1200
 
 #define VIRUS_MEM         "virus"
 #define LIFETIME_MEM      "lifetime"
 #define STATE_MEM         "pat_state"
 #define FRIENDS_SAVED_MEM "saved_friends"
 #define INIT_MEM          "init"
+#define ENCRYPT_MEM       "encrypt"
+#define TYPOGRAPHY_MEM    "tipography"
 
 typedef enum {
   HEALTY,

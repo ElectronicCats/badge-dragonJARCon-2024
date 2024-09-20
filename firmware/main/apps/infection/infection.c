@@ -53,6 +53,32 @@ static uint8_t get_random_virus() {
   return get_random_int() % VIRUS_NUM;
 }
 
+static void set_encrypt_value(bool value) {
+  preferences_put_bool(ENCRYPT_MEM, value);
+  oled_driver_set_encrypt_value(value);
+}
+
+static void set_typography_value(bool value) {
+  preferences_put_bool(TYPOGRAPHY_MEM, value);
+  oled_driver_set_typography_value(value);
+}
+
+static void set_terminal_state(bool state) {
+  set_encrypt_value(state);
+  set_typography_value(state);
+  ctx->patient->state = state ? TERMINAL : VACCINATED;
+  preferences_put_ushort(STATE_MEM, ctx->patient->state);
+}
+
+static void get_terminal_state() {
+  vaccination_exit();
+  genera_screen_display_card_information("No luces bien", "amigo");
+  vTaskDelay(pdMS_TO_TICKS(1500));
+  genera_screen_display_card_information("Parece que vas", "a ...");
+  set_terminal_state(true);
+  esp_restart();
+}
+
 void infection_display_status() {
   infection_show_screen(SHOW_INFECTION_STATE_EV, ctx);
 }
@@ -96,13 +122,14 @@ static void print_vaccine(vaccine_t vaccine) {
 }
 
 void infection_get_vaccinated() {
+  set_terminal_state(false);
   vaccination_exit();
   ctx->patient->state = VACCINATED;
+  genera_screen_display_card_information("Curado", "Ayuda a otros");
+  vTaskDelay(pdMS_TO_TICKS(2500));
   ctx->patient->remaining_time = LIFE_TIME;
   preferences_put_ushort(STATE_MEM, ctx->patient->state);
   preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
-  genera_screen_display_card_information("Curado", "Ayuda a otros");
-  vTaskDelay(pdMS_TO_TICKS(2500));
   infection_scenes_vaccines_builder_help();
 }
 
@@ -223,6 +250,12 @@ static void infection_task() {
     }
     if (ctx->patient->remaining_time > 0) {
       ctx->patient->remaining_time--;
+      if (ctx->patient->remaining_time < 300) {
+        set_typography_value(true);
+        ctx->patient->state = CRITICAL;
+      }
+    } else if (ctx->patient->state != TERMINAL) {
+      get_terminal_state();
     }
   }
   vTaskDelete(NULL);
@@ -250,6 +283,9 @@ static void load_patient_state() {
       preferences_get_ushort(FRIENDS_SAVED_MEM, 0);
   esp_wifi_get_mac(WIFI_IF_STA, ctx->patient->mac);
   ctx->patient->inmunity = 0;
+  if (ctx->patient->state == TERMINAL) {
+    set_terminal_state(true);
+  }
   if (ctx->patient->state >= INFECTED) {
     xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
   }
