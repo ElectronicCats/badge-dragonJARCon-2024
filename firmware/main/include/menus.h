@@ -27,6 +27,7 @@
 #include "wifi_module.h"
 #include "wifi_settings.h"
 #include "zigbee_module.h"
+#include "sbattery.h"
 
 typedef enum {
   MENU_MAIN = 0,
@@ -40,6 +41,7 @@ typedef enum {
   MENU_THREAD_APPS,
   MENU_GPS,
   MENU_BADGE_FINDER,
+  MENU_SBATTERY,
   /* WiFi applications */
   MENU_WIFI_ANALIZER,
   MENU_WIFI_DEAUTH,
@@ -466,6 +468,13 @@ menu_t menus[] = {  //////////////////////////////////
      .parent_idx = MENU_BADGE_FINDER,
      .last_selected_submenu = 0,
      .on_enter_cb = badge_link_screens_module_show_help,
+     .on_exit_cb = NULL,
+     .is_visible = true},
+    {.display_name = "Bateria Social",
+     .menu_idx = MENU_SBATTERY,
+     .parent_idx = MENU_APPLICATIONS,
+     .last_selected_submenu = 0,
+     .on_enter_cb = sbattery_begin,
      .on_exit_cb = NULL,
      .is_visible = true},
     {.display_name = "Display",

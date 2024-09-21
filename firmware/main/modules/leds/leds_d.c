@@ -3,6 +3,9 @@
 #include "driver/ledc.h"
 #include "ledc_controller_d.h"
 #include "preferences.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
 
 #define LED_G_1           GPIO_NUM_4
 #define LED_G_2           GPIO_NUM_18
@@ -95,6 +98,7 @@ void leds_on() {
 }
 
 void leds_off() {
+  led_stop(0);
   led_controller_led_off(led_g_x);
   led_controller_led_off(led_g_y);
   led_controller_led_off(led_y_x);
@@ -109,24 +113,28 @@ void leds_on_g(){
   leds_off();
   led_controller_led_on(led_g_x);
   led_controller_led_on(led_g_y);
+  ESP_LOGI("LED", "led_g_x");
 }
 
 void leds_on_y(){
   leds_off();
   led_controller_led_on(led_y_x);
   led_controller_led_on(led_y_y);
+  ESP_LOGI("LED", "led_y_x");
 }
 
 void leds_on_o(){
   leds_off();
   led_controller_led_on(led_o_x);
   led_controller_led_on(led_o_y);
+  ESP_LOGI("LED", "led_o_x");
 }
 
 void leds_on_r(){
   leds_off();
   led_controller_led_on(led_r_x);
   led_controller_led_on(led_r_y);
+  ESP_LOGI("LED", "led_r_x");
 }
 
 void leds_notification(){
@@ -154,4 +162,11 @@ void leds_set_brightness(uint8_t led, uint8_t brightness) {
 
 void led_stop(uint8_t led) {
   led_controller_stop_any_effect(led_g_x);
+  led_controller_stop_any_effect(led_g_y);
+  led_controller_stop_any_effect(led_y_x);
+  led_controller_stop_any_effect(led_y_y);
+  led_controller_stop_any_effect(led_o_x);
+  led_controller_stop_any_effect(led_o_y);
+  led_controller_stop_any_effect(led_r_x);
+  led_controller_stop_any_effect(led_r_y);
 }
