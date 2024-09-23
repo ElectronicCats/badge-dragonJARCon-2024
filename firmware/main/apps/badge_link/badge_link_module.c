@@ -18,6 +18,18 @@ TaskHandle_t badge_link_stop_badge_connect_task_handle;
 uint8_t send_data_timeout = SEND_DATA_TIMEOUT;
 bool badge_link_send_data = false;
 
+typedef enum {
+  BADGE_BSIDES = 0,
+  BADGE_DRAGONJAR,
+  BADGE_EKOPARTY,
+  BADGE_BUGCON,
+} badge_type_tt;
+
+typedef struct {
+  badge_type_tt badge_type;
+  uint8_t mac_addr[6];
+} badge_info_t;
+
 badge_link_screens_status_t badge_link_status = BADGE_LINK_SCANNING;
 badge_link_screens_status_t badge_link_status_previous =
     BADGE_LINK_UNLOCK_FEATURE;
@@ -77,6 +89,62 @@ void badge_link_update_found_badge_logo(badge_connect_recv_msg_t* msg) {
   }
 }
 
+/**
+ * @brief Save the badge info to a list in preferences
+ *
+ * @param msg
+ *
+ * @return void
+ */
+void save_badge_info(badge_connect_recv_msg_t* msg) {
+  badge_info_t badge_info;
+  if (msg->badge_type.is_bsides) {
+    badge_info.badge_type = BADGE_BSIDES;
+  } else if (msg->badge_type.is_dragonjar) {
+    badge_info.badge_type = BADGE_DRAGONJAR;
+  } else if (msg->badge_type.is_ekoparty) {
+    badge_info.badge_type = BADGE_EKOPARTY;
+  } else if (msg->badge_type.is_bugcon) {
+    badge_info.badge_type = BADGE_BUGCON;
+  }
+  memcpy(badge_info.mac_addr, msg->src_addr, 6);
+
+  uint16_t found_badges_count = preferences_get_ushort("badges_count", 0);
+  badge_info_t badge_info_list[found_badges_count + 1];
+
+  preferences_get_bytes("badges_list", (void*) &badge_info_list,
+                        sizeof(badge_info_list));
+
+  // Verify if the badge is already in the list
+  bool badge_already_found = false;
+  for (int i = 0; i < found_badges_count; i++) {
+    if (memcmp(badge_info_list[i].mac_addr, badge_info.mac_addr, 6) == 0) {
+      badge_already_found = true;
+      break;
+    }
+  }
+
+  if (!badge_already_found) {
+    badge_info_list[found_badges_count] = badge_info;
+    preferences_put_bytes("badges_list", (void*) &badge_info_list,
+                          sizeof(badge_info_list));
+    found_badges_count++;
+  } else {
+    ESP_LOGW(TAG, "Badge already found");
+  }
+
+  ESP_LOGI(TAG, "Badges found: %d, badge list size: %u", found_badges_count,
+           sizeof(badge_info_list));
+  for (int i = 0; i < found_badges_count; i++) {
+    ESP_LOGI(TAG, "Badge %d: %02X:%02X:%02X:%02X:%02X:%02X", i,
+             badge_info_list[i].mac_addr[0], badge_info_list[i].mac_addr[1],
+             badge_info_list[i].mac_addr[2], badge_info_list[i].mac_addr[3],
+             badge_info_list[i].mac_addr[4], badge_info_list[i].mac_addr[5]);
+  }
+
+  preferences_put_ushort("badges_count", found_badges_count);
+}
+
 // Check badge_connect_recv_msg_t struct in badge_connect.h to see what you can
 // get from the received message
 void badge_link_receive_data_cb(badge_connect_recv_msg_t* msg) {
@@ -86,8 +154,7 @@ void badge_link_receive_data_cb(badge_connect_recv_msg_t* msg) {
 
   bool is_hello_world = strcmp(data, "Hello world") == 0;
 
-  if (is_hello_world && !msg->badge_type.is_bsides &&
-      badge_link_status != BADGE_LINK_FOUND_TEXT) {
+  if (is_hello_world && badge_link_status != BADGE_LINK_FOUND_TEXT) {
     if (msg->rx_ctrl->rssi > -100 && msg->rx_ctrl->rssi <= -60) {
       badge_link_status = BADGE_LINK_BRING_IT_CLOSER;
     } else if (msg->rx_ctrl->rssi > -60) {
@@ -95,7 +162,8 @@ void badge_link_receive_data_cb(badge_connect_recv_msg_t* msg) {
       vTaskSuspend(badge_link_screens_module_scan_task_handle);
       stop_badge_connect_after_delay();
       badge_link_update_found_badge_logo(msg);
-      preferences_put_bool("badge_found", true);
+      preferences_put_bool("badge_found", true);  // Unlock feature
+      save_badge_info(msg);
     }
   }
 }

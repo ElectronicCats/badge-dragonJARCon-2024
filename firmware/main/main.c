@@ -42,6 +42,7 @@ void app_main() {
   keyboard_module_begin();
   menus_module_begin();
   leds_off();
+  // preferences_clear();
   preferences_put_bool("wifi_connected", false);
   infection_begin();
   // badge_link_module_begin();
