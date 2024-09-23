@@ -53,6 +53,38 @@ static uint8_t get_random_virus() {
   return get_random_int() % VIRUS_NUM;
 }
 
+static void set_encrypt_value(bool value) {
+  if (CREATOR) {
+    return;
+  }
+  preferences_put_bool(ENCRYPT_MEM, value);
+  oled_driver_set_encrypt_value(value);
+}
+
+static void set_typography_value(bool value) {
+  if (CREATOR) {
+    return;
+  }
+  preferences_put_bool(TYPOGRAPHY_MEM, value);
+  oled_driver_set_typography_value(value);
+}
+
+static void set_terminal_state(bool state) {
+  set_encrypt_value(state);
+  set_typography_value(state);
+  ctx->patient->state = state ? TERMINAL : VACCINATED;
+  preferences_put_ushort(STATE_MEM, ctx->patient->state);
+}
+
+static void get_terminal_state() {
+  vaccination_exit();
+  genera_screen_display_card_information("No luces bien", "amigo");
+  vTaskDelay(pdMS_TO_TICKS(1500));
+  genera_screen_display_card_information("Parece que vas", "a ...");
+  set_terminal_state(true);
+  esp_restart();
+}
+
 void infection_display_status() {
   infection_show_screen(SHOW_INFECTION_STATE_EV, ctx);
 }
@@ -66,16 +98,18 @@ void infection_get_infected() {
 }
 
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
+  if (!ctx->patient->init) {
+    ctx->patient->init = true;
+    save_patient_state();
+    ctx->patient->inmunity = 50;
+    infection_scenes_help();
+  }
   if (ctx->patient->inmunity > 0) {
     if (!(get_random_uint8() % INMUNITY_DAMAGE_PROBABILITY)) {
       ctx->patient->inmunity--;
     }
     // printf("INMUNITY: %d\n", ctx->patient->inmunity);
     return;
-  }
-  if (!ctx->patient->init) {
-    ctx->patient->init = true;
-    save_patient_state();
   }
   if (ctx->patient->state == HEALTY) {
     if (!(get_random_uint8() % INFECTION_PROBABILITY)) {
@@ -96,13 +130,14 @@ static void print_vaccine(vaccine_t vaccine) {
 }
 
 void infection_get_vaccinated() {
+  set_terminal_state(false);
   vaccination_exit();
   ctx->patient->state = VACCINATED;
+  genera_screen_display_card_information("Curado", "Ayuda a otros");
+  vTaskDelay(pdMS_TO_TICKS(2500));
   ctx->patient->remaining_time = LIFE_TIME;
   preferences_put_ushort(STATE_MEM, ctx->patient->state);
   preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
-  genera_screen_display_card_information("Curado", "Ayuda a otros");
-  vTaskDelay(pdMS_TO_TICKS(2500));
   infection_scenes_vaccines_builder_help();
 }
 
@@ -135,12 +170,16 @@ static void vaccine_req_cmd_handler(badge_connect_recv_msg_t* msg) {
 }
 
 static void vaccine_res_cmd_handler(badge_connect_recv_msg_t* msg) {
-  if (ctx->patient->state >= INFECTED) {
-    return;
-  }
   // printf("%s: %d\n", __func__, __LINE__);
   ctx->patient->friends_saved_count++;
   save_patient_state();
+}
+
+static void get_master_cure(badge_connect_recv_msg_t* msg) {
+  master_cure_req_cmd_t cmd = *((master_cure_req_cmd_t*) msg->data);
+  if (cmd.master_code == MASTER_CODE) {
+    infection_get_vaccinated();
+  }
 }
 
 static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
@@ -155,6 +194,9 @@ static void infection_cmd_handler(badge_connect_recv_msg_t* msg) {
       break;
     case VACCINE_RES_CMD:
       vaccine_res_cmd_handler(msg);
+      break;
+    case MASTER_CURE_CMD:
+      get_master_cure(msg);
       break;
     default:
       ping_handler(msg);
@@ -190,16 +232,26 @@ static void send_virus_cmd() {
   badge_connect_send(ESPNOW_ADDR_BROADCAST, &virus_cmd, sizeof(virus_cmd_t));
 }
 
+static void send_master_cure() {}
+
 void send_vaccine_req_cmd() {
-  if (ctx->patient->state >= INFECTED) {
+  if (ctx->patient->state >= INFECTED && !CREATOR) {
     return;
   }
+  if (CREATOR) {
+    master_cure_req_cmd_t master_cure;
+    master_cure.cmd = MASTER_CURE_CMD;
+    master_cure.master_code = MASTER_CODE;
+    badge_connect_send(badge_pairing_get_friend_addr(), &master_cure,
+                       sizeof(master_cure_req_cmd_t));
+  } else {
+    vaccine_req_cmd_t vaccine_cmd;
+    vaccine_cmd.cmd = VACCINE_REQ_CMD;
+    vaccine_cmd.vaccine = *ctx->vaccine;
+    badge_connect_send(badge_pairing_get_friend_addr(), &vaccine_cmd,
+                       sizeof(vaccine_req_cmd_t));
+  }
   // printf("%s: %d\n", __func__, __LINE__);
-  vaccine_req_cmd_t vaccine_cmd;
-  vaccine_cmd.cmd = VACCINE_REQ_CMD;
-  vaccine_cmd.vaccine = *ctx->vaccine;
-  badge_connect_send(badge_pairing_get_friend_addr(), &vaccine_cmd,
-                     sizeof(vaccine_req_cmd_t));
   vaccination_exit();
   genera_screen_display_notify_information("Vacuna enviada", "");
   vTaskDelay(pdMS_TO_TICKS(2000));
@@ -223,6 +275,12 @@ static void infection_task() {
     }
     if (ctx->patient->remaining_time > 0) {
       ctx->patient->remaining_time--;
+      if (ctx->patient->remaining_time < 600) {
+        set_typography_value(true);
+        ctx->patient->state = CRITICAL;
+      }
+    } else if (ctx->patient->state != TERMINAL) {
+      get_terminal_state();
     }
   }
   vTaskDelete(NULL);
@@ -250,6 +308,9 @@ static void load_patient_state() {
       preferences_get_ushort(FRIENDS_SAVED_MEM, 0);
   esp_wifi_get_mac(WIFI_IF_STA, ctx->patient->mac);
   ctx->patient->inmunity = 0;
+  if (ctx->patient->state == TERMINAL) {
+    set_terminal_state(true);
+  }
   if (ctx->patient->state >= INFECTED) {
     xTaskCreate(infection_task, "infection_task", 4096, NULL, 10, NULL);
   }
@@ -269,7 +330,9 @@ void infection_begin() {
   badge_connect_set_bsides_badge();
   load_patient_state();
   badge_pairing_begin();
-  // infection_get_infected();
+  if (CREATOR) {
+    infection_get_infected();
+  }
 }
 
 static void infection_show_screen(infection_event_t event, void* ctx) {

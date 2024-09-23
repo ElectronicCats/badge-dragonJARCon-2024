@@ -144,7 +144,7 @@ static void get_random_vaccine(infection_ctx_t* ctx, uint8_t dice_roll) {
 static void healty_dice_result(infection_ctx_t* ctx, uint8_t dice_roll) {
   char dice_roll_str[20];
   sprintf(dice_roll_str, "%d", dice_roll);
-  if (dice_roll < 3) {
+  if (dice_roll < 2) {
     genera_screen_display_card_information(dice_roll_str, "Mala suerte");
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     genera_screen_display_card_information(dice_roll_str, "Infectado");
@@ -211,10 +211,10 @@ static void engine_handler_keyboard_combination(uint8_t button_name,
         return;
       }
     }
-    engine_infection_vaccine_stop_timer();
-    engine_infection_keyboard_combination_done();
     infection_set_inmunity_time();
     infection_set_patient_state(HEALTY);
+    engine_infection_vaccine_stop_timer();
+    engine_infection_keyboard_combination_done();
     infection_scenes_main_menu();
     // general_register_menu(&vaccin_menu);
     // menus_module_set_app_state(true, engine_handler_keyboard);
@@ -288,6 +288,7 @@ static void show_sequence() {
 void engine_infection_alert() {
   screen_saver_stop();
   menus_module_disable_input();
+  screen_saver_get_idle_state();
   genera_screen_display_card_information("Alerta", "Virus detectado");
   vTaskDelay(2500 / portTICK_PERIOD_MS);
   genera_screen_display_card_information("Porfavor", "conservar calma");
