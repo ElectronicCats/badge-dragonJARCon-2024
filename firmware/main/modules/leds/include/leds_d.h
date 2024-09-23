@@ -17,5 +17,5 @@ void leds_on_y();
 void leds_on_o();
 void leds_on_r();
 void leds_notification();
-
+void leds_rgb_on();
 #endif  // LEDS_H

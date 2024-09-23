@@ -44,6 +44,7 @@ void app_main() {
   preferences_put_bool("wifi_connected", false);
   infection_begin();
   // badge_link_module_begin();
-  // cat_console_begin();
+  cat_console_begin();
   sbattery_set_status();
+  leds_rgb_on();
 }
