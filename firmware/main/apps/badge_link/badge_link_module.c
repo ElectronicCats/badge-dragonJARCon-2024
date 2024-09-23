@@ -18,18 +18,6 @@ TaskHandle_t badge_link_stop_badge_connect_task_handle;
 uint8_t send_data_timeout = SEND_DATA_TIMEOUT;
 bool badge_link_send_data = false;
 
-typedef enum {
-  BADGE_BSIDES = 0,
-  BADGE_DRAGONJAR,
-  BADGE_EKOPARTY,
-  BADGE_BUGCON,
-} badge_type_tt;
-
-typedef struct {
-  badge_type_tt badge_type;
-  uint8_t mac_addr[6];
-} badge_info_t;
-
 badge_link_screens_status_t badge_link_status = BADGE_LINK_SCANNING;
 badge_link_screens_status_t badge_link_status_previous =
     BADGE_LINK_UNLOCK_FEATURE;
@@ -99,13 +87,13 @@ void badge_link_update_found_badge_logo(badge_connect_recv_msg_t* msg) {
 void save_badge_info(badge_connect_recv_msg_t* msg) {
   badge_info_t badge_info;
   if (msg->badge_type.is_bsides) {
-    badge_info.badge_type = BADGE_BSIDES;
+    badge_info.badge_event = BADGE_BSIDES;
   } else if (msg->badge_type.is_dragonjar) {
-    badge_info.badge_type = BADGE_DRAGONJAR;
+    badge_info.badge_event = BADGE_DRAGONJAR;
   } else if (msg->badge_type.is_ekoparty) {
-    badge_info.badge_type = BADGE_EKOPARTY;
+    badge_info.badge_event = BADGE_EKOPARTY;
   } else if (msg->badge_type.is_bugcon) {
-    badge_info.badge_type = BADGE_BUGCON;
+    badge_info.badge_event = BADGE_BUGCON;
   }
   memcpy(badge_info.mac_addr, msg->src_addr, 6);
 
@@ -124,7 +112,7 @@ void save_badge_info(badge_connect_recv_msg_t* msg) {
     }
   }
 
-  if (!badge_already_found) {
+  if (!badge_already_found || true) {
     badge_info_list[found_badges_count] = badge_info;
     preferences_put_bytes("badges_list", (void*) &badge_info_list,
                           sizeof(badge_info_list));
@@ -256,6 +244,8 @@ void badge_link_module_begin() {
   // See README.md or badge_connect.h for more information
   // badge_connect_set_bsides_badge();
   badge_connect_set_dragonjar_badge();
+  // badge_connect_set_ekoparty_badge();
+  // badge_connect_set_bugcon_badge();
   xTaskCreate(badge_link_state_machine_task, "badge_link_state_machine_task",
               4096, NULL, 4, &badge_link_state_machine_task_handle);
 }

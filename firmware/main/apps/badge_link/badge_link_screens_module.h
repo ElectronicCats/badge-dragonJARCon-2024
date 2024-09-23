@@ -33,3 +33,8 @@ void badge_link_screens_module_set_found_badge_logo(
     epd_bitmap_logo_index_t new_found_badge_logo_index);
 
 void badge_link_screens_module_show_help();
+
+/**
+ * @brief Display the number of badges found of every event
+ */
+void badge_link_screens_module_display_count();

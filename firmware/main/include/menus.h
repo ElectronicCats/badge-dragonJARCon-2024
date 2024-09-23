@@ -90,6 +90,7 @@ typedef enum {
   MENU_INFECTION_HELP,
   /* Badge finder */
   MENU_BADGE_FINDER_SCAN,
+  MENU_BADGE_FINDER_COUNT,
   MENU_BADGE_FINDER_HELP,
   /* About submenus */
   MENU_ABOUT_VERSION,
@@ -523,6 +524,13 @@ menu_t menus[] = {  //////////////////////////////////
      .parent_idx = MENU_BADGE_FINDER,
      .last_selected_submenu = 0,
      .on_enter_cb = badge_link_module_begin,
+     .on_exit_cb = NULL,
+     .is_visible = true},
+    {.display_name = "Contador",
+     .menu_idx = MENU_BADGE_FINDER_COUNT,
+     .parent_idx = MENU_BADGE_FINDER,
+     .last_selected_submenu = 0,
+     .on_enter_cb = badge_link_screens_module_display_count,
      .on_exit_cb = NULL,
      .is_visible = true},
     {.display_name = "Ayuda",
