@@ -489,6 +489,7 @@ menu_t menus[] = {  //////////////////////////////////
      .on_enter_cb = wifi_settings_begin,
      .on_exit_cb = NULL,
      .is_visible = true},
+#ifdef CONFIG_SD_CARD
     {.display_name = "SD card",
      .menu_idx = MENU_SETTINGS_SD_CARD,
      .parent_idx = MENU_SETTINGS_SYSTEM,
@@ -510,6 +511,7 @@ menu_t menus[] = {  //////////////////////////////////
      .on_enter_cb = sd_card_settings_verify_sd_card,
      .on_exit_cb = NULL,
      .is_visible = true},
+#endif
 #ifdef CONFIG_FILE_MANAGER_ENABLE
     {.display_name = "File Manager",
      .menu_idx = MENU_FILE_MANAGER,
