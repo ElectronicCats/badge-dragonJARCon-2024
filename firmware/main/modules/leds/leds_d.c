@@ -6,6 +6,9 @@
 #include "freertos/task.h"
 #include "leds_d.h"
 #include "preferences.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
 
 #define LED_G_1  GPIO_NUM_4
 #define LED_G_2  GPIO_NUM_18

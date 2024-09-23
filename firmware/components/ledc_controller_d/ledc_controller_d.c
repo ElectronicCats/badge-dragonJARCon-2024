@@ -57,7 +57,7 @@ typedef struct {
 } led_effects_t;
 
 // Maximum number of LEDs for breath effect
-#define MAX_LEDS 2  // max 8 ledc_channels
+#define MAX_LEDS 8  // max 8 ledc_channels
 
 // Array to hold the breath and blink effect data for multiple LEDs
 static led_effects_t led_effects[MAX_LEDS];
