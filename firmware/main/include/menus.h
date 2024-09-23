@@ -18,6 +18,7 @@
 #include "infection.h"
 #include "open_thread_module.h"
 #include "ota_module.h"
+#include "sbattery.h"
 #include "sd_card_settings_module.h"
 #include "settings_module.h"
 #include "stealth_mode.h"
@@ -27,7 +28,6 @@
 #include "wifi_module.h"
 #include "wifi_settings.h"
 #include "zigbee_module.h"
-#include "sbattery.h"
 
 typedef enum {
   MENU_MAIN = 0,
@@ -321,7 +321,7 @@ menu_t menus[] = {  //////////////////////////////////
      .last_selected_submenu = 0,
      .on_enter_cb = NULL,
      .on_exit_cb = NULL,
-     .is_visible = true},
+     .is_visible = false},
   #endif
   #ifdef CONFIG_ZIGBEE_APP_SNIFFER
     {.display_name = "Sniffer",
