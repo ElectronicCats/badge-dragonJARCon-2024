@@ -92,16 +92,18 @@ void infection_get_infected() {
 }
 
 static void virus_cmd_handler(badge_connect_recv_msg_t* msg) {
+  if (!ctx->patient->init) {
+    ctx->patient->init = true;
+    save_patient_state();
+    ctx->patient->inmunity = 30;
+    infection_scenes_help();
+  }
   if (ctx->patient->inmunity > 0) {
     if (!(get_random_uint8() % INMUNITY_DAMAGE_PROBABILITY)) {
       ctx->patient->inmunity--;
     }
     // printf("INMUNITY: %d\n", ctx->patient->inmunity);
     return;
-  }
-  if (!ctx->patient->init) {
-    ctx->patient->init = true;
-    save_patient_state();
   }
   if (ctx->patient->state == HEALTY) {
     if (!(get_random_uint8() % INFECTION_PROBABILITY)) {

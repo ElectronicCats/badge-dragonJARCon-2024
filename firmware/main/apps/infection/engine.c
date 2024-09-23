@@ -288,6 +288,7 @@ static void show_sequence() {
 void engine_infection_alert() {
   screen_saver_stop();
   menus_module_disable_input();
+  screen_saver_get_idle_state();
   genera_screen_display_card_information("Alerta", "Virus detectado");
   vTaskDelay(2500 / portTICK_PERIOD_MS);
   genera_screen_display_card_information("Porfavor", "conservar calma");
