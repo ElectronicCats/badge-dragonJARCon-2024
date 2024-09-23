@@ -151,3 +151,15 @@ CONFIG_SDA_GPIO=6
 CONFIG_RESET_GPIO=-1
 CONFIG_I2C_PORT_0=y
 # end of OLED Screen Configuration
+
+#
+# Buzzer Configuration
+#
+# CONFIG_BUZZER_COMPONENT_ENABLED is not set
+# end of Buzzer Configuration
+
+#
+# LEDs Configuration
+#
+# CONFIG_LEDS_COMPONENT_ENABLED is not set
+# end of LEDs Configuration
