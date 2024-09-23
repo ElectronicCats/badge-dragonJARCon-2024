@@ -8,7 +8,7 @@
 #include "flash_fs.h"
 #include "flash_fs_screens.h"
 #include "keyboard_module.h"
-#include "leds.h"
+#include "leds_d.h"
 #include "menus_module.h"
 #include "open_thread.h"
 #include "preferences.h"
@@ -33,10 +33,8 @@ void app_main() {
 
   bool stealth_mode = preferences_get_bool("stealth_mode", false);
   if (!stealth_mode) {
-    buzzer_enable();
     leds_begin();
   }
-  buzzer_begin(BUZZER_PIN);
   sd_card_begin();
   flash_fs_begin(flash_fs_screens_handler);
   keyboard_module_begin();
@@ -47,4 +45,5 @@ void app_main() {
   infection_begin();
   // badge_link_module_begin();
   // cat_console_begin();
+  sbattery_set_status();
 }

@@ -17,6 +17,10 @@ flash:
 	make test_port
 	idf.py -p $(PORT) flash
 
+format:
+	make test_port
+	idf.py -p $(PORT) erase-flash
+
 monitor:
 	make test_port
 	idf.py -p $(PORT) monitor
@@ -29,3 +33,5 @@ clean:
 all: flash monitor
 
 .PHONY: test_port test_minino_path setup compile flash monitor clean all
+
+ff:	format all

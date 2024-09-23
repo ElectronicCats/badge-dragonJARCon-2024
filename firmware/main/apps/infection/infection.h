@@ -13,6 +13,7 @@
 #define LIFETIME_MEM      "lifetime"
 #define STATE_MEM         "pat_state"
 #define FRIENDS_SAVED_MEM "saved_friends"
+#define INIT_MEM          "init"
 
 typedef enum {
   HEALTY,
@@ -29,6 +30,8 @@ typedef struct {
   virus_t virus;
   uint16_t remaining_time;
   uint16_t friends_saved_count;
+  uint8_t inmunity;
+  bool init;
 } patient_t;
 
 typedef struct {
@@ -36,20 +39,21 @@ typedef struct {
   vaccine_t* vaccine;
 } infection_ctx_t;
 
-char* patient_states_str[] = {"Sano",      "",        "Vacunado",
+char* patient_states_str[] = {"Saludable", "",        "Vacunado",
                               "Infectado", "Critico", "Terminal"};
 
 void infection_begin();
 void infection_scenes_begin();
 void infection_display_status();
 
-void get_infected();
-
-void infection_start_pairing();
-void infection_stop_pairing();
-
-void infection_vaccine_builder_mRNA();
-void infection_vaccine_builder_viral_code();
-void infection_vaccine_builder_Lipid_layer();
+void infection_get_infected();
 
 patient_state_t infection_get_patient_state();
+
+void send_vaccine_req_cmd();
+void infection_set_inmunity_time();
+void infection_set_patient_state(patient_state_t state);
+infection_ctx_t* infection_get_context();
+void infection_get_vaccinated();
+uint8_t get_random_uint8();
+bool get_random_bool();

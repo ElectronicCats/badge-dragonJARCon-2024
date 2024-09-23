@@ -8,16 +8,10 @@ static badge_pairing_ctx_t* ctx = NULL;
 volatile bool is_task_running;
 volatile bool waiting_task;
 
-void badge_pairing_set_callbacks(badge_pairing_event_cb_t on_connect_cb,
-                                 badge_pairing_event_cb_t on_disconnect_cb,
-                                 badge_pairing_event_cb_t on_pairing_end_cb) {
-  ctx->on_connect_cb = on_connect_cb;
-  ctx->on_disconnect_cb = on_disconnect_cb;
-  ctx->on_pairing_end_cb = on_pairing_end_cb;
-}
+void badge_pairing_reset();
 
 static void on_badge_connect(uint8_t* src_addr) {
-  printf("on_badge_connect\n");
+  // printf("on_badge_connect\n");
   ctx->state = true;
   ctx->ping_response = true;
   ctx->ping_retries = 0;
@@ -28,10 +22,8 @@ static void on_badge_connect(uint8_t* src_addr) {
 }
 
 static void on_badge_disconnect() {
-  printf("on_badge_disconnect\n");
-  memset(&ctx->friend_addr, 0, 6);
-  ctx->state = false;
-  ctx->ping_retries = 0;
+  // printf("on_badge_disconnect\n");
+  badge_pairing_reset();
   if (ctx->on_disconnect_cb) {
     ctx->on_disconnect_cb();
   }
@@ -44,16 +36,18 @@ static void send_ping() {
   ping_cmd.ping_salt = PING_SALT;
   ping_cmd.ping_hash = PING_HASH;
   ping_cmd.is_request = true;
+  ping_cmd.blue_team = ctx->blue_team;
   badge_connect_send(ctx->state ? ctx->friend_addr : ESPNOW_ADDR_BROADCAST,
                      &ping_cmd, sizeof(pairing_ping_cmd_t));
 }
 
-static void send_ping_response() {
+static void send_ping_response(uint8_t* src_addr) {
   pairing_ping_cmd_t ping_cmd;
   ping_cmd.ping_salt = PING_SALT;
   ping_cmd.ping_hash = PING_HASH;
   ping_cmd.is_request = false;
-  badge_connect_send(ctx->friend_addr, &ping_cmd, sizeof(pairing_ping_cmd_t));
+  ping_cmd.blue_team = ctx->blue_team;
+  badge_connect_send(src_addr, &ping_cmd, sizeof(pairing_ping_cmd_t));
 }
 
 static void get_ping_response(badge_connect_recv_msg_t* msg) {
@@ -66,14 +60,19 @@ static void get_ping_response(badge_connect_recv_msg_t* msg) {
 }
 
 static void get_ping_request(badge_connect_recv_msg_t* msg) {
-  if (!ctx->state) {
+  pairing_ping_cmd_t* cmd = (pairing_ping_cmd_t*) msg->data;
+  if (!ctx->state && cmd->blue_team != ctx->blue_team) {
     send_ping_response(msg->src_addr);
-  } else if (memcmp(ctx->friend_addr, msg->src_addr, 6) == 0) {
+  } else if (memcmp(ctx->friend_addr, msg->src_addr, 6) == 0 &&
+             cmd->blue_team != ctx->blue_team) {
     send_ping_response(msg->src_addr);
   }
 }
 
 void ping_handler(badge_connect_recv_msg_t* msg) {
+  if (!is_task_running) {
+    return;
+  }
   if (msg->rx_ctrl->rssi < (ctx->state ? CONNECTED_RSSI_FILTER : RSSI_FILTER)) {
     return;
   }
@@ -81,7 +80,6 @@ void ping_handler(badge_connect_recv_msg_t* msg) {
   if (cmd->ping_hash != PING_HASH || cmd->ping_salt != PING_SALT) {
     return;
   }
-
   if (cmd->is_request) {
     get_ping_request(msg);
   } else {
@@ -110,6 +108,7 @@ void badge_pairing_deinit() {
   while (waiting_task) {
     vTaskDelay(pdMS_TO_TICKS(5));
   };
+  badge_pairing_reset();
   // free(ctx);
 }
 
@@ -124,4 +123,33 @@ void badge_pairing_init() {
 
 uint8_t* badge_pairing_get_friend_addr() {
   return ctx->friend_addr;
+}
+
+void badge_pairing_reset() {
+  // printf("badge_pairing_reset\n");
+  memset(&ctx->friend_addr, 0, 6);
+  ctx->state = false;
+  ctx->ping_retries = 0;
+}
+
+void badge_pairing_set_callbacks(badge_pairing_event_cb_t on_connect_cb,
+                                 badge_pairing_event_cb_t on_disconnect_cb,
+                                 badge_pairing_event_cb_t on_pairing_end_cb) {
+  ctx->on_connect_cb = on_connect_cb;
+  ctx->on_disconnect_cb = on_disconnect_cb;
+  ctx->on_pairing_end_cb = on_pairing_end_cb;
+}
+
+void badge_pairing_set_blue_team() {
+  if (ctx == NULL) {
+    return;
+  }
+  ctx->blue_team = true;
+}
+
+void badge_pairing_set_red_team() {
+  if (ctx == NULL) {
+    return;
+  }
+  ctx->blue_team = false;
 }

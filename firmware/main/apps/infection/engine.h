@@ -5,3 +5,4 @@
 #include "oled_screen.h"
 
 void engine_infection_alert();
+void engine_infection_vaccine_dice();
