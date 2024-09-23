@@ -49,25 +49,25 @@ void leds_off() {
 void leds_on_g() {
   leds_off();
   gpio_set_level(led_pins[LED_G_1], 1);
-  gpio_set_level(led_pins[LED_G_1], 1);
+  gpio_set_level(led_pins[LED_G_2], 1);
 }
 
 void leds_on_y() {
   leds_off();
   gpio_set_level(led_pins[LED_Y_1], 1);
-  gpio_set_level(led_pins[LED_Y_1], 1);
+  gpio_set_level(led_pins[LED_Y_2], 1);
 }
 
 void leds_on_o() {
   leds_off();
   gpio_set_level(led_pins[LED_O_1], 1);
-  gpio_set_level(led_pins[LED_O_1], 1);
+  gpio_set_level(led_pins[LED_O_2], 1);
 }
 
 void leds_on_r() {
   leds_off();
   gpio_set_level(led_pins[LED_R_1], 1);
-  gpio_set_level(led_pins[LED_R_1], 1);
+  gpio_set_level(led_pins[LED_R_2], 1);
 }
 
 static void leds_notification_coroutine() {
