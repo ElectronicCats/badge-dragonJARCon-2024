@@ -17,6 +17,8 @@
 #define ENCRYPT_MEM       "encrypt"
 #define TYPOGRAPHY_MEM    "tipography"
 
+#define CREATOR 0
+
 typedef enum {
   HEALTY,
   IDLE,

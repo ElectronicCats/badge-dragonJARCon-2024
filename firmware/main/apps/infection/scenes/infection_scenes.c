@@ -40,7 +40,7 @@ static void main_menu_selection_handler(uint8_t selection) {
       infection_scenes_state_menu();
       break;
     case VACCINES_OPTION:
-      if (infection_get_patient_state() >= INFECTED) {
+      if (infection_get_patient_state() >= INFECTED && !CREATOR) {
         infection_scenes_vaccines_receiver_menu();
       } else {
         infection_scenes_vaccines_builder_menu();

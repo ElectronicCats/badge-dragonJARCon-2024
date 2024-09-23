@@ -36,7 +36,7 @@ static void vaccination_input_cb(uint8_t button_name, uint8_t button_event) {
   switch (button_name) {
     case BUTTON_LEFT:
       vaccination_exit();
-      if (infection_get_patient_state() >= INFECTED) {
+      if (infection_get_patient_state() >= INFECTED && !CREATOR) {
         infection_scenes_vaccines_receiver_menu();
       } else {
         infection_scenes_vaccines_builder_menu();
@@ -73,8 +73,8 @@ void vaccination_begin() {
 
   menus_module_set_app_state(true, vaccination_input_cb);
   ctx = calloc(1, sizeof(vaccination_ctx_t));
-  ctx->role =
-      infection_get_patient_state() >= INFECTED ? RECIPIENT : VACCINATOR;
+  ctx->role = infection_get_patient_state() >= INFECTED ? RECIPIENT | CREATOR
+                                                        : VACCINATOR;
   if (ctx->role) {
     badge_pairing_set_blue_team();
   } else {
