@@ -35,7 +35,10 @@ void app_main() {
   if (!stealth_mode) {
     leds_begin();
   }
-  sd_card_begin();
+  // Hardcoded for the dragon
+  if (preferences_get_int("dp_select", 0) == 0) {
+    preferences_put_int("dp_select", 5);
+  }
   flash_fs_begin(flash_fs_screens_handler);
   keyboard_module_begin();
   menus_module_begin();
@@ -44,7 +47,9 @@ void app_main() {
   preferences_put_bool("wifi_connected", false);
   infection_begin();
   // badge_link_module_begin();
-  cat_console_begin();
   sbattery_set_status();
   leds_rgb_on();
+
+  // Always start the console at the end
+  cat_console_begin();
 }
