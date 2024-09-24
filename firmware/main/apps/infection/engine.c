@@ -4,10 +4,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "infection_scenes.h"
+#include "leds_d.h"
 #include "menus_module.h"
 #include "screen_saver.h"
 #include "virus.h"
-
 #define ITEMOFFSET    1
 #define SEQUENCE_SIZE 6
 
@@ -290,8 +290,10 @@ void engine_infection_alert() {
   menus_module_disable_input();
   screen_saver_get_idle_state();
   genera_screen_display_card_information("Alerta", "Virus detectado");
+  leds_notification(6, 200, 100);
   vTaskDelay(2500 / portTICK_PERIOD_MS);
   genera_screen_display_card_information("Porfavor", "conservar calma");
+  leds_notification(6, 200, 100);
   vTaskDelay(2500 / portTICK_PERIOD_MS);
   genera_screen_display_card_information("Memorice", "la secuencia");
   vTaskDelay(2500 / portTICK_PERIOD_MS);

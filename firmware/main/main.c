@@ -42,7 +42,7 @@ void app_main() {
   preferences_put_bool("wifi_connected", false);
   infection_begin();
   // badge_link_module_begin();
-  leds_notification();
+  leds_notification(3, 500, 250);
   sbattery_set_status();
   leds_rgb_on();
   // Always start the console at the end
