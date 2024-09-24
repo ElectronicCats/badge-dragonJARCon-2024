@@ -40,11 +40,11 @@ void app_main() {
   menus_module_begin();
   leds_off();
   preferences_put_bool("wifi_connected", false);
-  // badge_link_module_begin();
-  // Always start the console at the end
   infection_begin();
-  // cat_console_begin();
-  leds_rgb_on();
+  // badge_link_module_begin();
   leds_notification();
   sbattery_set_status();
+  leds_rgb_on();
+  // Always start the console at the end
+  cat_console_begin();
 }

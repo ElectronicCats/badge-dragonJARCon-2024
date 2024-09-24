@@ -53,8 +53,6 @@ void leds_begin() {
   led_controller_led_init(led_r);
   led_controller_led_init(led_g);
   led_controller_led_init(led_b);
-
-  leds_on();
 }
 
 void leds_on_g() {
