@@ -88,14 +88,20 @@ static void module_cb_event_leds(uint8_t button_name, uint8_t button_event) {
 
 static void sbattery_handler() {
   ESP_LOGI("SBATTERY", "sbattery_handler level: %d", battery_levl);
+  // leds_off();
   if (battery_levl == 0) {
-    leds_off();
     leds_on_r();
   } else if (battery_levl == 1) {
+    leds_on_r();
     leds_on_o();
   } else if (battery_levl == 2) {
+    leds_on_r();
+    leds_on_o();
     leds_on_y();
   } else if (battery_levl == 3) {
+    leds_on_r();
+    leds_on_o();
+    leds_on_y();
     leds_on_g();
   }
   preferences_put_int("sbattery", battery_levl);

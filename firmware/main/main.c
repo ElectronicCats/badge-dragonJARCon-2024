@@ -1,27 +1,23 @@
 #include <stdio.h>
-#include "apps/ble/hid_device/hid_module.h"
-#include "apps/ble/trackers/trackers_module.h"
+#include "badge_connect.h"
+#include "badge_link_module.h"
 #include "buzzer.h"
 #include "cat_console.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "flash_fs.h"
 #include "flash_fs_screens.h"
+#include "infection.h"
 #include "keyboard_module.h"
 #include "leds_d.h"
 #include "menus_module.h"
 #include "open_thread.h"
 #include "preferences.h"
+#include "sbattery.h"
 #include "sd_card.h"
 #include "wardriving_module.h"
 #include "web_file_browser.h"
 #include "wifi_app.h"
-
-#include "badge_connect.h"
-#include "badge_link_module.h"
-#include "infection.h"
-
-#define BUZZER_PIN GPIO_NUM_2
 
 static const char* TAG = "main";
 
@@ -43,13 +39,12 @@ void app_main() {
   keyboard_module_begin();
   menus_module_begin();
   leds_off();
-  // preferences_clear();
   preferences_put_bool("wifi_connected", false);
-  infection_begin();
   // badge_link_module_begin();
-  sbattery_set_status();
-  leds_rgb_on();
-
   // Always start the console at the end
-  cat_console_begin();
+  infection_begin();
+  // cat_console_begin();
+  leds_rgb_on();
+  leds_notification();
+  sbattery_set_status();
 }

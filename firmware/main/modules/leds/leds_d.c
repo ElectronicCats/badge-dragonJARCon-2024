@@ -53,6 +53,8 @@ void leds_begin() {
   led_controller_led_init(led_r);
   led_controller_led_init(led_g);
   led_controller_led_init(led_b);
+
+  leds_on();
 }
 
 void leds_on_g() {
@@ -99,15 +101,15 @@ void leds_off() {
 
 void leds_notification() {
   leds_on();
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-  leds_off();
   vTaskDelay(500 / portTICK_PERIOD_MS);
-  leds_on();
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
   leds_off();
-  vTaskDelay(500 / portTICK_PERIOD_MS);
+  vTaskDelay(250 / portTICK_PERIOD_MS);
   leds_on();
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  leds_off();
+  vTaskDelay(250 / portTICK_PERIOD_MS);
+  leds_on();
+  vTaskDelay(500 / portTICK_PERIOD_MS);
   leds_off();
 }
 
