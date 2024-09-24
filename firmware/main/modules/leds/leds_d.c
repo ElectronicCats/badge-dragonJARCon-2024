@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "coroutine.h"
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
@@ -22,6 +23,12 @@
 #define LED_ER_C LEDC_CHANNEL_0
 #define LED_EG_C LEDC_CHANNEL_1
 #define LED_EB_C LEDC_CHANNEL_2
+
+typedef struct {
+  uint8_t pulses;
+  uint16_t on_time;
+  uint16_t off_time;
+} leds_notification_ctx;
 
 static led_t *led_r, *led_g, *led_b;
 
@@ -97,18 +104,23 @@ void leds_off() {
   gpio_set_level(LED_R_2, 0);
 }
 
-void leds_notification() {
-  leds_on();
-  vTaskDelay(500 / portTICK_PERIOD_MS);
-  leds_off();
-  vTaskDelay(250 / portTICK_PERIOD_MS);
-  leds_on();
-  vTaskDelay(500 / portTICK_PERIOD_MS);
-  leds_off();
-  vTaskDelay(250 / portTICK_PERIOD_MS);
-  leds_on();
-  vTaskDelay(500 / portTICK_PERIOD_MS);
-  leds_off();
+void leds_notification_coroutine(void* ctx) {
+  leds_notification_ctx* notification_ctx = ctx;
+  for (uint8_t i = 0; i < notification_ctx->pulses; i++) {
+    leds_on();
+    vTaskDelay(pdMS_TO_TICKS(notification_ctx->on_time));
+    leds_off();
+    vTaskDelay(pdMS_TO_TICKS(notification_ctx->off_time));
+  }
+  vTaskDelete(NULL);
+}
+
+void leds_notification(uint8_t pulses, uint16_t on_time, uint16_t off_time) {
+  leds_notification_ctx notification_ctx;
+  notification_ctx.pulses = pulses;
+  notification_ctx.on_time = on_time;
+  notification_ctx.off_time = off_time;
+  start_coroutine(leds_notification_coroutine, &notification_ctx);
 }
 
 void leds_rgb_on() {
