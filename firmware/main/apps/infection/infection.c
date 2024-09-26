@@ -132,12 +132,12 @@ static void print_vaccine(vaccine_t vaccine) {
 void infection_get_vaccinated() {
   set_terminal_state(false);
   vaccination_exit();
-  ctx->patient->state = VACCINATED;
-  genera_screen_display_card_information("Curado", "Ayuda a otros");
-  vTaskDelay(pdMS_TO_TICKS(2500));
   ctx->patient->remaining_time = LIFE_TIME;
+  ctx->patient->state = VACCINATED;
   preferences_put_ushort(STATE_MEM, ctx->patient->state);
   preferences_put_ushort(LIFETIME_MEM, ctx->patient->remaining_time);
+  genera_screen_display_card_information("Curado", "Ayuda a otros");
+  vTaskDelay(pdMS_TO_TICKS(2500));
   infection_scenes_vaccines_builder_help();
 }
 
@@ -279,7 +279,8 @@ static void infection_task() {
         set_typography_value(true);
         ctx->patient->state = CRITICAL;
       }
-    } else if (ctx->patient->state != TERMINAL) {
+    } else if (ctx->patient->state > VACCINATED &&
+               ctx->patient->state < TERMINAL) {
       get_terminal_state();
     }
   }
