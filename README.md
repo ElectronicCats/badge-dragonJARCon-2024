@@ -1,6 +1,6 @@
 # Badge DragonJARCon 2024
 
-Badge Oficial BugCON 2024 el primero para una conferencia en Colombia
+Badge Oficial DragonJAR 2024 el primero para una conferencia en Colombia
 
 ## Getting started
 
