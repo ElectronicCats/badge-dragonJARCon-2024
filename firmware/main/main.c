@@ -36,6 +36,7 @@ void app_main() {
     preferences_put_int("dp_select", 5);
   }
   flash_fs_begin(flash_fs_screens_handler);
+  sd_card_begin();
   keyboard_module_begin();
   menus_module_begin();
   leds_off();
