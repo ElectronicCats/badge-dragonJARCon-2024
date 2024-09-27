@@ -1,5 +1,7 @@
 # Badge DragonJARCon 2024
 
+Badge Oficial BugCON 2024 el primero para una conferencia en Colombia
+
 ## Getting started
 
 1. Connect Badge via USB to your computer.
@@ -9,12 +11,16 @@
 ## Tecnologia
 
 - ESP32C6
-- LEDs
-- USB
+- LED
+- Baterias 3 x AAA
+- USB C
+- Bateria Social
 
 ## Gratitude
 Do you want to say thank you? Tag these companies on social networks and show them your badge, thanks to them it is possible
 
+- [PCBWay](https://www.pcbway.com/)
+- [TPX](https://tpx.mx/)
 - [ElectronicCats](https://electroniccats.com/)
 
 ## License
