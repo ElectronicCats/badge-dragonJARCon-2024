@@ -16,6 +16,10 @@ Badge Oficial DragonJAR 2024 el primero para una conferencia en Colombia
 - USB C
 - Bateria Social
 
+## How to build the firmware
+
+Check the [Developer guide](./firmware/README.md) to learn how to build the firmware from scratch.
+
 ## Gratitude
 Do you want to say thank you? Tag these companies on social networks and show them your badge, thanks to them it is possible
 
